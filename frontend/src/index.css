@@ -1,0 +1,7 @@
+@import "tailwindcss";
+@plugin "daisyui";
+
+/* Fix mirrored barcode when front camera is used */
+.unmirror-video video {
+  transform: scaleX(-1);
+}
