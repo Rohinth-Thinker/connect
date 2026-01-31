@@ -157,7 +157,7 @@ export default function MessagesPage() {
   // };
 
   if (!conversations) return <h1>Loading</h1>
-  if (conversations.length < 1) return <h1>No Conversations started yet</h1>
+  // if (conversations.length < 1) return <h1>No Conversations started yet</h1>
 
   return (
     <div className="h-screen bg-neutral-50 relative overflow-hidden md:flex">
@@ -250,7 +250,7 @@ export default function MessagesPage() {
 
 </div>
 
-
+        { (conversations.length < 1) && <h1>No Conversations started yet</h1>}
         {/* Chat List */}
         <div className="flex-1 overflow-y-auto mt-1">
           {members.map((member) => (

@@ -10,6 +10,6 @@ export default defineConfig({
       "/api": "http://localhost:3000/",
     },
     
-    allowedHosts: ["associated-sapphire-resources-prior.trycloudflare.com"],
+    allowedHosts: ["average-beads-touched-studio.trycloudflare.com"],
   }
 })

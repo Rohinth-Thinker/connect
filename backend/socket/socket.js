@@ -6,8 +6,16 @@ const { Server } = require('socket.io');
 const app = express();
 const server = http.createServer(app);
 const io = new Server(server, {
-    cors: 'http://localhost:5173',
+   cors: 'http://localhost:5173',
 });
+
+// const io = new Server(server, {
+//   cors: {
+//     origin: "*", // or your tunnel domain
+//     methods: ["GET", "POST"],
+//   },
+// });
+
 
 io.on('connection', (socket) => {
     console.log('User Connected: ', socket.id);
