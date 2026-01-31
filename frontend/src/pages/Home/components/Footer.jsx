@@ -1,6 +1,9 @@
 import { Link } from "react-router-dom";
+import { useAuthContext } from "../../../context/AuthContext";
 
 function Footer() {
+
+  const {authUser} = useAuthContext();
 
     return (
         <ul className="menu menu-horizontal bg-base-200 rounded-box mt-6 w-full flex justify-around fixed bottom-0 border-t border-dotted border-primary">
@@ -22,12 +25,12 @@ function Footer() {
   </li>
 
     <li className="mr-25">
-    <a className="tooltip" data-tip="message">
+    <Link to={"/chat/inbox"} className="tooltip" data-tip="message">
         <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth="2" stroke="currentColor" className="size-6">
             <path strokeLinecap="round" strokeLinejoin="round" d="M8.625 12a.375.375 0 1 1-.75 0 .375.375 0 0 1 .75 0Zm0 0H8.25m4.125 0a.375.375 0 1 1-.75 0 .375.375 0 0 1 .75 0Zm0 0H12m4.125 0a.375.375 0 1 1-.75 0 .375.375 0 0 1 .75 0Zm0 0h-.375M21 12c0 4.556-4.03 8.25-9 8.25a9.764 9.764 0 0 1-2.555-.337A5.972 5.972 0 0 1 5.41 20.97a5.969 5.969 0 0 1-.474-.065 4.48 4.48 0 0 0 .978-2.025c.09-.457-.133-.901-.467-1.226C3.93 16.178 3 14.189 3 12c0-4.556 4.03-8.25 9-8.25s9 3.694 9 8.25Z" />
         </svg>
 
-    </a>
+    </Link>
   </li>
 
 <li className="absolute -top-9">
@@ -44,7 +47,7 @@ function Footer() {
     </a>
   </li>
   <li>
-    <Link to={"/profile"} className="tooltip" data-tip="Profile">
+    <Link to={`/profile/${authUser?.username}`} className="tooltip" data-tip="Profile">
       <div tabIndex={0} role="button" className="btn-circle avatar">
         <div className="w-6 rounded-full border">
             <img

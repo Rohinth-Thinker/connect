@@ -31,7 +31,7 @@ function App() {
 
       <Route path='/create' element={<CreatePostPage />} />
 
-      <Route path='/profile' element={<ProfilePage />} />
+      <Route path='/profile/:username' element={<ProfilePage />} />
 
       <Route path='/profile/edit' element={authUser ? <EditProfilePage /> : <Navigate to={"/signup"} />} />
 

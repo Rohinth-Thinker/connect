@@ -1,11 +1,23 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import itemDetails from "../../../testing/itemDetails";
 import { Link } from "react-router-dom";
+import { useAuthContext } from "../../../context/AuthContext";
 
-function ItemCard() {
+function ItemCard({query, savedItems}) {
     const [items, setItems] = useState([]);
     const [loading, setLoading] = useState(false);
-    const [savedItems, setSavedItems] = useState([]);
+    // const [savedItems, setSavedItems] = useState([]);
+
+    const {authUser} = useAuthContext();
+    const [page, setPage] = useState(1);
+    const [hasMore, setHasMore] = useState(false);
+    const lastElementRef = useRef(null);
+
+    useEffect(() => {
+        setItems([]);
+        setPage(1);
+        setHasMore(false);
+    }, [query])
 
     useEffect(() => {
         const controller = new AbortController();
@@ -13,7 +25,7 @@ function ItemCard() {
         async function fetchItems() {
             try {
                 setLoading(true);
-                const response = await fetch('/api/items/', {
+                const response = await fetch(`/api/items?q=${query}&page=${page}&limit=10`, {
                     signal: controller.signal,
                 });
                 const result = await response.json();
@@ -22,7 +34,9 @@ function ItemCard() {
                     return;
                 }
 
-                setItems(result);
+                console.log(result.items);
+                setItems((prev) => [...prev, ...result.items]);
+                setHasMore(result.hasMore);
             } catch(err) {}
             finally {
                 setLoading(false);
@@ -33,31 +47,51 @@ function ItemCard() {
 
         return () => controller.abort();
 
-    }, [])
+    }, [page, query])
 
     useEffect(() => {
-        const controller = new AbortController();
+        if (!lastElementRef.current) return;
 
-        async function fetchSavedItems() {
-            try {
-                const response = await fetch('/api/profile/savedItems', {
-                    signal: controller.signal,
-                })
-
-                const result = await response.json();
-
-                if (!response.ok) {
-                    return;
+        const observer = new IntersectionObserver((entries) => {
+            if (entries[0].isIntersecting) {
+                if (hasMore) {
+                    setPage((p) => p + 1);
                 }
+            }
+        }, {threshold: 0.5})
 
-                setSavedItems(result);
-            } catch(err) {}
+        observer.observe(lastElementRef.current);
+
+        return () => {
+            observer.disconnect();
         }
+    }, [hasMore])
 
-        fetchSavedItems();
+    // useEffect(() => {
+    //     const controller = new AbortController();
 
-        return () => controller.abort();
-    }, [])
+    //     async function fetchSavedItems() {
+    //         try {
+    //             const response = await fetch('/api/profile/savedItems', {
+    //                 signal: controller.signal,
+    //             })
+
+    //             const result = await response.json();
+
+    //             if (!response.ok) {
+    //                 return;
+    //             }
+
+    //             if (authUser) setSavedItems(result);
+    //         } catch(err) {}
+    //     }
+
+    //     fetchSavedItems();
+
+    //     return () => controller.abort();
+    // }, [authUser])
+
+    // useEffect(() => {})
 
     // if (loading) {
     //     return (
@@ -96,6 +130,8 @@ function ItemCard() {
     return (
         <div className="grid grid-cols-2 gap-6 gap-y-12 p-5 mt-5 mb-5">
             { cards }
+
+            <div ref={lastElementRef}></div>
         </div>
     )
 }

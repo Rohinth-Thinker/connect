@@ -1,4 +1,4 @@
-const { findUser, addSavedItems, removeSavedItems, updateEditedProfile, getUserProfile } = require("../db/dbFunction");
+const { findUser, addSavedItems, removeSavedItems, updateEditedProfile, getUserProfile, getAllUserProfiles, getUserProfilesWithPagination } = require("../db/dbFunction");
 
 async function handleGetSavedItems(req, res) {
     try {
@@ -90,7 +90,29 @@ async function handleGetUserProfile(req, res) {
     }
 }
 
+async function handleFetchAllUserProfiles(req, res) {
+    const profiles = await getAllUserProfiles();
+    res.json(profiles);
+}
+
+async function handleFetchUserProfiles(req, res) {
+
+    try {
+
+        const {q="", page="1", limit="10"} = req.query;
+
+        const {profiles, total, skipped} = await getUserProfilesWithPagination(q, Number(page), Number(limit));
+
+        const hasMore = skipped + profiles.length < total;
+        
+        res.status(200).json({profiles, hasMore});
+    } catch(err) {
+        console.log(`Error at handleFetchUserProfiles Controller - ${err}`);
+        res.status(400).json({error: 'Something went wrong. Try again later.'});
+    }
+}
+
 module.exports = {
     handleGetSavedItems, handleUpdateSavedItems, handleEditProfile, handleGetUserProfile,
-
+    handleFetchAllUserProfiles, handleFetchUserProfiles,
 };

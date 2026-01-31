@@ -64,4 +64,10 @@ const itemSchema = mongoose.Schema({
 
 }, { timestamps: true })
 
+// itemSchema.index({
+//     title: 'text',
+//     description: 'text',
+//     tags: 'text',
+// })
+
 module.exports = mongoose.model("Item", itemSchema, "Item");

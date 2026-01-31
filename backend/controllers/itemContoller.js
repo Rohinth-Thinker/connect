@@ -10,8 +10,12 @@ async function handleAddItems(req, res) {
 
 async function handleFetchItems(req, res) {
     try {
-        const items = await fetchItems();
-        res.status(200).json(items);
+        const {q:query='', page=1, limit=5} = req.query;
+
+        const {items, total, skipped} = await fetchItems(query, Number(page), Number(limit));
+        const hasMore = items.length + skipped < total;
+
+        res.status(200).json({items, hasMore});
     } catch(err) {
         console.log(`Error at handleFetchItems Controller - ${err}`);
         res.status(400).json({error: 'Somethng went wrong. Try again later.'});

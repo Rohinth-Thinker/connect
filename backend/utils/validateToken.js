@@ -18,6 +18,7 @@ async function validateToken(req, res, next) {
     // }
 
     req.username = decoded.username;
+    req.userID = decoded.userID;
     next();
 }
 

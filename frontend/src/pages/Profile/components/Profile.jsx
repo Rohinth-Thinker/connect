@@ -1,28 +1,29 @@
 
 import { useEffect, useState } from "react";
 import ItemCard from "../../Home/components/ItemCard";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 
-export default function Profile({ isOwner = true }) {
+export default function Profile({ isOwner = true, user }) {
   const [activeTab, setActiveTab] = useState("items");
-  const [user, setUser] = useState(null);
-  let username = 'rohinth';
+  // const [user, setUser] = useState(null);
+  const navigate = useNavigate();
+  // let username = 'rohinth';
 
-  useEffect(() => {
-    async function fetchUserProfile() {
-      const response = await fetch(`/api/profile/${username}`);
-      const result = await response.json();
-      if (!response.ok) {
-        console.log(result.error);
-        return;
-      }
+  // useEffect(() => {
+  //   async function fetchUserProfile() {
+  //     const response = await fetch(`/api/profile/${username}`);
+  //     const result = await response.json();
+  //     if (!response.ok) {
+  //       console.log(result.error);
+  //       return;
+  //     }
 
-      console.log(result);
-      setUser(result);
-    }
+  //     console.log(result);
+  //     setUser(result);
+  //   }
 
-    if (username) fetchUserProfile();
-  }, [username])
+  //   if (username) fetchUserProfile();
+  // }, [username])
 
   // const user = {
   //   username: "rohinth_thinker",
@@ -33,6 +34,22 @@ export default function Profile({ isOwner = true }) {
   //   bio: "Selling books & notes. Open to negotiation.",
   //   profilePic: "https://i.pravatar.cc/150",
   // };
+
+  async function handleMessageClick(id) {
+    try {
+      const response = await fetch(`/api/chat/conversation/check/${id}`);
+      const result = await response.json();
+
+      if (!response.ok) return;
+
+
+      navigate(`/chat/conversation/${result.conversationID}`);
+      
+    } catch(err) {
+      console.log(err);
+      return;
+    }
+  }
 
   const items = [1, 2, 3, 4];
   const savedItems = [1, 2];
@@ -50,7 +67,7 @@ export default function Profile({ isOwner = true }) {
       {/* HEADER */}
       <div className="flex items-center gap-5">
         <img
-          src={user.avatar}
+          src={user.avatar || "https://img.daisyui.com/images/stock/photo-1534528741775-53994a69daeb.webp" }
           className="w-24 h-24 rounded-full object-cover"
         />
 
@@ -79,7 +96,7 @@ export default function Profile({ isOwner = true }) {
           </>
         ) : (
           <>
-            <button className="flex-1 bg-[#570DF8] text-white py-2 rounded hover:bg-[#4b0ed6]">
+            <button onClick={() => handleMessageClick(user._id)} className="flex-1 bg-[#570DF8] text-white py-2 rounded hover:bg-[#4b0ed6]">
               Message
             </button>
             <button className="flex-1 border py-2 rounded hover:bg-gray-100">

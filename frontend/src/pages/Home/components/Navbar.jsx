@@ -1,8 +1,9 @@
 import Searchbar from "./Searchbar";
 import { useAuthContext } from '../../../context/AuthContext';
 import {Link} from 'react-router-dom';
+import { useEffect } from "react";
 
-function Navbar({ children }) {
+function Navbar({ children, avatar }) {
 
     const { authUser, setAuthUser } = useAuthContext();
 
@@ -27,7 +28,7 @@ function Navbar({ children }) {
                 <div className="w-10 rounded-full">
                 <img
                     alt="Tailwind CSS Navbar component"
-                    src="https://img.daisyui.com/images/stock/photo-1534528741775-53994a69daeb.webp" />
+                    src={avatar || "https://img.daisyui.com/images/stock/photo-1534528741775-53994a69daeb.webp"} />
                 </div>
             </div>
             <ul

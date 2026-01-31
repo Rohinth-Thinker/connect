@@ -1,6 +1,7 @@
 
-function Searchbar() {
+function Searchbar({text, handleTextChange, handleSubmit}) {
     return (
+        <form onSubmit={handleSubmit}>
         <label className="input w-full border-[#570DF8]">
         <svg className="h-[1em] opacity-50" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
             <g
@@ -14,8 +15,9 @@ function Searchbar() {
             <path d="m21 21-4.3-4.3"></path>
             </g>
         </svg>
-        <input type="search" required placeholder="Search" />
+        <input type="search" placeholder="Search" value={text} onChange={handleTextChange} />
         </label>
+        </form>
     )
 }
 

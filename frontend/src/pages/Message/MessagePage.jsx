@@ -1,8 +1,9 @@
 
-import { useEffect } from "react";
+import { useEffect, useRef } from "react";
 import { useState } from "react";
 import { useAuthContext } from "../../context/AuthContext";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
+import Footer from "../Home/components/Footer";
 
 const chatList = [
   {
@@ -31,6 +32,18 @@ export default function MessagesPage() {
   const [conversations, setConversations] = useState(null);
   const {authUser} = useAuthContext();
 
+  const [searchText, setSearchText] = useState("");
+  const [page, setPage] = useState(1);
+
+  const [isSearchedFocused, setIsSearchedFocused] = useState(false);
+
+  const [userResults, setUserResults] = useState([]);
+  const [hasMore, setHasMore] = useState(false);
+
+  const lastElementRef = useRef(null);
+
+  const navigate = useNavigate();
+
   useEffect(() => {
     async function fetchUserConversations() {
       const response = await fetch('/api/chat/conversation/all');
@@ -47,11 +60,90 @@ export default function MessagesPage() {
     fetchUserConversations();
   }, [])
 
+  useEffect(() => {
+    setUserResults([]);
+    setPage(1);
+    setHasMore(false);
+  }, [searchText])
+
+  useEffect(() => {
+    const controller = new AbortController();
+
+    const debounceTimeout = setTimeout(() => {
+
+    async function fetchUsers() {
+      try {
+        const response = await fetch(`/api/profile/fetch/profiles?q=${searchText}&page=${page}&limit=5`, {
+          signal: controller.signal,
+        });
+        const result = await response.json();
+        
+        if (!response.ok) return;
+
+        setUserResults((prev) => [...prev, ...result.profiles]);
+        console.log(result.hasMore);
+        setHasMore(() => result.hasMore);
+      } catch(err) {
+        console.log(err);
+      }
+    }
+
+    if (searchText) fetchUsers();
+    else setUserResults([]);
+
+    }, 300);
+
+    return () => {
+      controller.abort();
+      clearTimeout(debounceTimeout);
+    }
+  }, [searchText, page])
+
+  useEffect(() => {
+    if (!lastElementRef.current) return;
+
+    const observer = new IntersectionObserver((entries) => {
+      if (entries[0].isIntersecting) {
+        if (hasMore) {
+          console.log(true);
+          setPage((prev) => prev + 1);
+        }
+      }
+    }, {threshold: 0.5})
+
+    observer.observe(lastElementRef.current);
+
+    return () => {
+      observer.disconnect();
+    }
+  }, [hasMore])
+
+  console.log(hasMore, page);
   const members = conversations?.map((convo) => {
     const participants = convo.conversation;
     const extracted = participants.find((member) => member._id !== authUser.userID);
     return {convoID: convo._id, ...extracted};
   })
+
+  function handleTextChange(e) {
+    setSearchText(e.target.value);
+  }
+
+  async function handleMessageClick(id) {
+    try {
+      const response = await fetch(`/api/chat/conversation/check/${id}`);
+      const result = await response.json();
+
+      if (!response.ok) return;
+
+
+      navigate(`/chat/conversation/${result.conversationID}`);
+      
+    } catch(err) {
+      console.log(err);
+      return;
+    }
+  }
 
   const openChat = (chat) => {
     console.log(chat);
@@ -79,17 +171,85 @@ export default function MessagesPage() {
           <h2 className="text-lg font-semibold text-[#570DF8]">Messages</h2>
         </div>
 
+        <div>
+
         {/* Search */}
         <div className="p-3 bg-base-200">
           <div className="relative">
             <input
               type="text"
               placeholder="Search chats"
+              value={searchText}
+              onChange={handleTextChange}
+              onFocus={() => setIsSearchedFocused(true)}
+              // onBlur={() => setIsSearchedFocused(false) }
+              onBlur={() => setTimeout(() => setIsSearchedFocused(false), 150) }
               className="w-full rounded-lg border border-primary px-10 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-purple-500"
             />
             <span className="absolute left-3 top-2.5 text-gray-400">🔍</span>
           </div>
         </div>
+
+        {searchText && isSearchedFocused && (
+          <ul className="bg-base-100 shadow-xl rounded-box mt-1 mx-3 absolute w-[calc(100%-24px)] max-h-80 overflow-y-auto z-50 border border-[#570DF8]">
+            { 
+              userResults.length <= 0 ? 
+                  <div className="w-full min-h-20 flex justify-center items-center">No results found</div>
+                    :
+                  userResults.map((user) => {
+                    return (
+                      <li key={user._id} className="mt-2 mb-2">
+                        <div className="flex items-center justify-between gap-1 p-2 ">
+                          {/* Left: Avatar + Username */}
+                          <Link to={`/profile/${user.username}`} className="flex items-center gap-3 flex-1">
+                            <div className="avatar">
+                              <div className="w-10 rounded-full">
+                                <img
+                                  src={user.avatar || "https://img.daisyui.com/images/stock/photo-1534528741775-53994a69daeb.webp"}
+                                  alt="profile"
+                                />
+                              </div>
+                            </div>
+                            <div className="flex flex-col">
+                              <span className="font-medium text-sm">{user.username}</span>
+                              <span className="font-medium text-xs text-gray-600">{user.rollNo}</span>
+                            </div>
+                          </Link>
+
+                          {/* Right: Message Button */}
+                          <button
+                            type="button"
+                            className="btn btn-circle bg-[#570DF8]"
+                            title="Message"
+                            onMouseDown={() => handleMessageClick(user._id)}
+                          >
+                            <svg
+                              xmlns="http://www.w3.org/2000/svg"
+                              fill="none"
+                              viewBox="0 0 24 24"
+                              strokeWidth={2}
+                              stroke="white"
+                              className="w-6"
+                            >
+                              <path
+                                strokeLinecap="round"
+                                strokeLinejoin="round"
+                                d="M8 10h8M8 14h6M21 12c0 4.418-4.03 8-9 8a9.77 9.77 0 01-4-.83L3 20l1.83-4A7.72 7.72 0 013 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"
+                              />
+                            </svg>
+                          </button>
+
+                        </div>
+                      </li>
+                    )
+                  })
+                }
+            <div ref={lastElementRef}></div>
+          </ul>
+        )}
+
+</div>
+
 
         {/* Chat List */}
         <div className="flex-1 overflow-y-auto mt-1">
@@ -118,6 +278,7 @@ export default function MessagesPage() {
           ))}
         </div>
       </div>
+      <Footer />
     </div>
   );
 }

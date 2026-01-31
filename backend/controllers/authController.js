@@ -25,7 +25,7 @@ async function handleSignup(req, res) {
 
         const newUser = await createUser(username, password, rollNo);
 
-        const token = generateToken(username);
+        const token = generateToken(username, newUser._id);
         setCookie(res, token);
 
         res.status(200).json({msg: 'Signed up successfully', userID: newUser._id});
@@ -55,7 +55,7 @@ async function handleLogin(req, res) {
             return res.status(401).json({error: 'Invalid password'});
         }
 
-        const token = generateToken(username);
+        const token = generateToken(username, user._id);
         setCookie(res, token);
 
         res.status(200).json({msg: 'Logged in successfully', userID: user._id});
