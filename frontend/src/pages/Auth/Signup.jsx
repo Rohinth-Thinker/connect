@@ -9,7 +9,7 @@ const STABLE_READS_REQUIRED = 2;
 const ROLLNO_REGEX = /^\d{2}[A-Z]\d{4}$/;
 
 export default function Signup() {
-  const [rollNo, setRollNo] = useState("23E2937");
+  const [rollNo, setRollNo] = useState("");
   const [scanning, setScanning] = useState(false);
   const [starting, setStarting] = useState(false); // 🔥 NEW
   const [error, setError] = useState("");

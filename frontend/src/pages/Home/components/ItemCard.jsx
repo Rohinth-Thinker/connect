@@ -120,7 +120,7 @@ function ItemCard({query, savedItems}) {
 
     const cards = items.map((item) => {
 
-        const isSavedByUser = savedItems.includes(item._id);
+        const isSavedByUser = savedItems?.includes(item._id);
 
         return (
             <Card key={item._id} item={item} isSavedByUser={isSavedByUser} />
