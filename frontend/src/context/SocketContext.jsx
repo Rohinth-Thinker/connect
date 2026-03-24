@@ -13,7 +13,7 @@ export const SocketContextProvider = ({ children }) => {
 
     useEffect(() => {
         function connectSocket() {
-            const socket = io('http://localhost:3000');
+            const socket = io();
 
             // const socket = io('http://10.192.68.136:3000/');
             // const socket = io();
