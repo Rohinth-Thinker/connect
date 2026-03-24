@@ -19,9 +19,7 @@ function useFetchItems(fetchUrl, resetDependencies, fetchDependencies, resetPage
         async function fetchItems() {
             try {
                 setLoading(true);
-                // const response = await fetch(`/api/items?q=${query}&page=${page}&limit=5`, {
-                //     signal: controller.signal,
-                // });
+
                 const response = await fetch(fetchUrl, {
                     signal: controller.signal,
                 });

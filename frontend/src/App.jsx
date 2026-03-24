@@ -1,20 +1,20 @@
+import { useAuthContext } from './context/AuthContext'
 import { Navigate, Route, Routes } from 'react-router-dom'
 
 import './App.css'
+
 import Home from './pages/Home/Home'
 import ItemPage from './pages/Item/ItemPage'
-import Navbar from './pages/Home/components/Navbar'
-import Footer from './pages/Home/components/Footer'
-
 import Signup from './pages/Auth/Signup'
 import Login from './pages/Auth/Login'
-import { useAuthContext } from './context/AuthContext'
 import CreatePostPage from './pages/Create/CreatePostPage'
 import ProfilePage from './pages/Profile/ProfilePage'
 import EditProfilePage from './pages/EditProfile/EditProfilePage'
-import MessagesPage from './pages/Message/MessagePage'
-import Test from './pages/Message/Test'
+import UserConversationsPage from './pages/Conversation/UserConversationsPage'
+import ConvoMessagesPage from './pages/Conversation/ConvoMessagesPage'
 
+
+export const DEFAULT_AVATAR_URL = "https://img.daisyui.com/images/stock/photo-1534528741775-53994a69daeb.webp";
 
 function App() {
 
@@ -22,6 +22,7 @@ function App() {
 
   return (
     <Routes>
+
       <Route path='/signup' element={authUser ? <Navigate to={"/"} /> : <Signup /> } />
       <Route path='/login' element={authUser ? <Navigate to={"/"} /> : <Login /> } />
 
@@ -32,30 +33,11 @@ function App() {
       <Route path='/create' element={authUser ? <CreatePostPage /> : <Navigate to={"/signup"} />} />
 
       <Route path='/profile/:username' element={<ProfilePage />} />
-
       <Route path='/profile/edit' element={authUser ? <EditProfilePage /> : <Navigate to={"/signup"} />} />
 
-      <Route path='/chat/inbox' element={authUser ? <MessagesPage /> : <Navigate to={"/signup"} />} />
-      <Route path='/chat/conversation/:id' element={authUser ? <Test /> : <Navigate to={"/signup"} />} />
+      <Route path='/chat/inbox' element={authUser ? <UserConversationsPage /> : <Navigate to={"/signup"} />} />
+      <Route path='/chat/conversation/:id' element={authUser ? <ConvoMessagesPage /> : <Navigate to={"/signup"} />} />
 
-      {/* <Home /> */}
-
-      {/* <Item /> */}
-
-      {/* <Navbar />
-      <ItemPage />
-      <Footer /> */}
-
-      {/* <Navbar />
-      <CreatePost /> */}
-
-      {/* <Navbar />
-      <ProfilePage />
-      <Footer /> */}
-
-      {/* <Signup_test4 /> */}
-
-      {/* <Login_test1 /> */}
     </Routes>
   )
 }

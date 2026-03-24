@@ -113,11 +113,6 @@ async function handleEditProfile(req, res) {
 
 async function handleGetUserProfile(req, res) {
     try {
-        const {username} = req;
-        const u = await findUser(username);
-        if (!u) {
-            return res.status(400).json({error: 'Invalid Token'});
-        }
 
         const {requestedUsername} = req.params;
         if (!requestedUsername) {

@@ -1,10 +1,16 @@
 import { useEffect, useRef, useState } from "react";
-import LoadingComponent from "../../../comoponets/LoadingComponent";
 
-const ProfilePhoto = ({ imageUrl, onUpload, uploading }) => {
+import LoadingComponent from "../../../comoponets/LoadingComponent";
+import { useAuthContext } from "../../../context/AuthContext";
+import { DEFAULT_AVATAR_URL } from "../../../App";
+
+const ProfilePhoto = ({ onUpload, uploading }) => {
   const fileInputRef = useRef(null);
   const [preview, setPreview] = useState(null);
   const [showModal, setShowModal] = useState(false);
+  
+  const {authUser} = useAuthContext();
+  const imageUrl = authUser.avatar || DEFAULT_AVATAR_URL;
 
   useEffect(() => {
     return () => {
@@ -29,18 +35,16 @@ const ProfilePhoto = ({ imageUrl, onUpload, uploading }) => {
     const previewUrl = URL.createObjectURL(file);
     setPreview(previewUrl)
 
-    // Send file to parent
     if (onUpload) onUpload(file);
   };
 
   return (
     <div className="relative flex flex-col items-center">
-      {/* Profile Image */}
       <div
         onClick={handleImageClick}
         className="w-32 h-32 rounded-full overflow-hidden cursor-pointer border-4 border-gray-200 hover:scale-105 transition"
       >
-        {!uploading && imageUrl ?
+        {!uploading ?
           <img
             src={preview || imageUrl}
             alt="Profile"
@@ -51,7 +55,6 @@ const ProfilePhoto = ({ imageUrl, onUpload, uploading }) => {
         }
       </div>
 
-      {/* Change Button */}
         <>
           <button
             onClick={handleChangeClick}
@@ -69,7 +72,6 @@ const ProfilePhoto = ({ imageUrl, onUpload, uploading }) => {
           />
         </>
 
-      {/* View Modal */}
       {showModal && (
         <div
           className="fixed inset-0 bg-black bg-opacity-70 flex items-center justify-center z-50"

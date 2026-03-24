@@ -1,9 +1,10 @@
+import { useEffect } from "react";
 import { useRef, useState } from "react"
+import { useAuthContext } from "../../../context/AuthContext";
+
 import ItemCard from "../../Home/components/ItemCard"
 import useFetchItems from "../../../hooks/useFetchItems";
 import useIntersectionObserver from "../../../hooks/useIntersectionObserver";
-import { useAuthContext } from "../../../context/AuthContext";
-import { useEffect } from "react";
 import NotFoundComponent from "../../../comoponets/NotFoundComponent";
 
 function UserItemListings({ userID }) {

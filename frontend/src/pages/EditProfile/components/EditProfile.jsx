@@ -1,15 +1,17 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuthContext } from "../../../context/AuthContext";
+
 import ProfilePhoto from "./ProfilePhoto.jsx";
-import uploadToCloudinary from "../../../utils/cloudUpload.js";
 import LoadingComponent from "../../../comoponets/LoadingComponent.jsx";
+
+import uploadToCloudinary from "../../../utils/cloudUpload.js";
 
 export default function EditProfile() {
 
   const [user, setUser] = useState(null);
   const [uploading, setUploading] = useState(false);
-  const {authUser} = useAuthContext();
+  const {authUser, setAuthUser} = useAuthContext();
   const [loading, setLoading] = useState(false);
   const [inputs, setInputs] = useState({departmentName: '', bio: ''});
   const navigate = useNavigate();
@@ -57,7 +59,9 @@ export default function EditProfile() {
 
     setUploading(false);
 
-    console.log("Uploaded, I GUESS");
+    localStorage.setItem('user', JSON.stringify({...authUser, avatar: url}));
+    setAuthUser({...authUser, avatar: url});
+
   }
 
   function handleTextChange(e) {
@@ -91,7 +95,7 @@ export default function EditProfile() {
 
     if ( (!profile.departmentName.trim() && !profile.bio.trim()) || (profile.departmentName === user.departmentName && profile.bio === user.bio) ) {
       console.log("NO VALUE")
-      // navigate(`/profile/${authUser.username}`);
+      navigate(`/profile/${authUser.username}`);
       return
     }
 
@@ -124,10 +128,9 @@ export default function EditProfile() {
         <h1 className=" flex-1 text-xl font-semibold text-center text-primary">Edit Profile</h1>
       </div>
 
-      <ProfilePhoto imageUrl={user?.avatar} onUpload={profileImageUpload} uploading={uploading} />
+      <ProfilePhoto onUpload={profileImageUpload} uploading={uploading} />
 
       <form onSubmit={handleSubmit} className="space-y-10">
-        {/* Username */}
         <div>
           <label className="font-medium">Username</label>
           <input
@@ -139,7 +142,6 @@ export default function EditProfile() {
           />
         </div>
         
-        {/* College Name */}
         <div>
           <label className="font-medium">College name</label>
           <input
@@ -151,7 +153,6 @@ export default function EditProfile() {
           />
         </div>
 
-        {/* Department Name */}
         <div>
           <label className="font-medium">Department name</label>
           <input
@@ -165,7 +166,6 @@ export default function EditProfile() {
           />
         </div>
 
-        {/* Bio */}
         <div>
           <label className="font-medium">Bio</label>
           <textarea
@@ -178,14 +178,6 @@ export default function EditProfile() {
             className="textarea textarea-bordered w-full mt-2 border-[#570DF8]"
           />
         </div>
-
-        {/* SUBMIT BUTTON */}
-        {/* <button
-          type="submit"
-          className="w-full bg-[#570DF8] text-white py-3 rounded-lg hover:bg-[#4b0ed6] transition"
-        >
-          Edit
-        </button> */}
 
         <button
           type="submit"

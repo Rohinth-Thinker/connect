@@ -58,7 +58,7 @@ async function handleLogin(req, res) {
         const token = generateToken(username, user._id);
         setCookie(res, token);
 
-        res.status(200).json({msg: 'Logged in successfully', userID: user._id});
+        res.status(200).json({msg: 'Logged in successfully', userID: user._id, avatar: user.avatar});
 
     } catch(err) {
         console.log(`Error at handleLogin Controller - ${err}`);

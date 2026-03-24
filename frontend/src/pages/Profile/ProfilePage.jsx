@@ -35,11 +35,11 @@ function ProfilePage() {
 
     return (
         <>
-            <Navbar loading={loading} avatar={avatar} />
+            <Navbar />
 
-            <Profile isOwner={authUser.userID === user?._id} user={user} loading={loading} />
+            <Profile isOwner={authUser?.userID === user?._id} user={user} loading={loading} />
 
-            <Footer loading={loading} avatar={avatar} />
+            <Footer />
         </>
     )
 }

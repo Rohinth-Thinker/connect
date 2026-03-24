@@ -1,7 +1,8 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import uploadToCloudinary from "../../../utils/cloudUpload";
+
 import LoadingComponent from "../../../comoponets/LoadingComponent";
+import uploadToCloudinary from "../../../utils/cloudUpload";
 
 export default function CreatePost() {
   const [images, setImages] = useState([]);
@@ -14,7 +15,6 @@ export default function CreatePost() {
 
   const handleImageChange = (e) => {
     const files = Array.from(e.target.files);
-    // setImages((prev) => [...prev, ...files]);
     setImages(files);
   };
 
@@ -40,64 +40,53 @@ export default function CreatePost() {
 
    const handleSubmit = async (e) => {
     e.preventDefault();
-    setLoading(true);
+    try {
+      setLoading(true);
 
-    let results = images;
-    if (images.length > 0) {
-      const uploadPromises = images.map((img) => uploadToCloudinary(img, "connect_items", "item_images"));
-      results = await Promise.all(uploadPromises);
-    }
-
-    const itemData = {
-      title: e.target.title.value,
-      price: e.target.price.value,
-      category: e.target.category.value,
-      condition: e.target.condition.value,
-      description: e.target.description.value,
-      tags,
-      images: results,
-    };
-
-    console.log(itemData);
-    const response = await fetch('/api/items/item/upload', {
-      method: "POST",
-      body: JSON.stringify({itemData}),
-      headers: {
-        "Content-Type": "application/json",
+      let results = images;
+      if (images.length > 0) {
+        const uploadPromises = images.map((img) => uploadToCloudinary(img, "connect_items", "item_images"));
+        results = await Promise.all(uploadPromises);
       }
-    })
-    const result = await response.json();
-    setLoading(false);
 
-    if (!response.ok) {
-      console.log(result.error)
-      return;
+      const itemData = {
+        title: e.target.title.value.trim(),
+        price: e.target.price.value,
+        category: e.target.category.value,
+        condition: e.target.condition.value,
+        description: e.target.description.value,
+        tags,
+        images: results,
+      };
+
+      if (!itemData.title || !itemData.price) {
+        alert("Title and price are required");
+        return;
+      }
+
+      console.log(itemData);
+      const response = await fetch('/api/items/item/upload', {
+        method: "POST",
+        body: JSON.stringify({itemData}),
+        headers: {
+          "Content-Type": "application/json",
+        }
+      })
+      const result = await response.json();
+
+      if (!response.ok) {
+        console.log(result.error)
+        return;
+      }
+
+      navigate(`/items/${result.itemID}`);
+    } catch(err) {
+      console.log("Submit failed: ", err);
+    } finally {
+      setLoading(false);
     }
-
-    navigate(`/items/${result.itemID}`);
 
   };
-
-  // const CLOUD_NAME = "durdslrun";
-  // const UPLOAD_PRESET = "connect_items";
-  // async function uploadToCloudinary(file) {
-    
-  //   const formData = new FormData();
-  //   formData.append("file", file);
-  //   formData.append("upload_preset", UPLOAD_PRESET);
-  //   formData.append("folder", "item_images");
-
-  //   const response = await fetch(`https://api.cloudinary.com/v1_1/${CLOUD_NAME}/image/upload`, {
-  //     method: "POST",
-  //     body: formData,
-  //   })
-
-  //   const result = await response.json();
-
-  //   const optimizedUrl = result.secure_url.replace('/upload/', '/upload/f_auto,q_auto/');
-  //   return optimizedUrl;
-
-  // }
 
   return (
     <div className="max-w-xl mx-auto p-4 pb-28">
@@ -112,7 +101,6 @@ export default function CreatePost() {
       </div>
 
       <form onSubmit={handleSubmit} className="space-y-10">
-        {/* IMAGES */}
         <div>
           <label className="font-medium block mb-3">Images</label>
           <div>
@@ -148,7 +136,6 @@ export default function CreatePost() {
           )}
         </div>
 
-        {/* TITLE */}
         <div>
           <label className="font-medium">Title</label>
           <input
@@ -161,7 +148,6 @@ export default function CreatePost() {
           />
         </div>
 
-        {/* PRICE */}
         <div>
           <label className="font-medium">Price (₹)</label>
           <input
@@ -175,7 +161,6 @@ export default function CreatePost() {
           />
         </div>
 
-        {/* CATEGORY */}
         <div>
           <label className="font-medium">Category</label>
           <select
@@ -191,7 +176,6 @@ export default function CreatePost() {
           </select>
         </div>
 
-        {/* CONDITION */}
         <div>
           <label className="font-medium">Condition</label>
           <select
@@ -208,7 +192,6 @@ export default function CreatePost() {
           </select>
         </div>
 
-        {/* DESCRIPTION */}
         <div>
           <label className="font-medium">Description</label>
           <textarea
@@ -220,7 +203,6 @@ export default function CreatePost() {
           />
         </div>
 
-        {/* TAGS */}
         <div>
           <label className="font-medium">Tags</label>
           <div className="flex rounded-sm w-full border border-[#570DF8] mt-2">
@@ -260,7 +242,6 @@ export default function CreatePost() {
           </div>
         </div>
 
-        {/* POST BUTTON */}
         <button
           type="submit"
           disabled={loading}

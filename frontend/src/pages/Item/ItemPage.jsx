@@ -1,11 +1,11 @@
+import { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
+import { useAuthContext } from "../../context/AuthContext";
+
 import Footer from "../Home/components/Footer";
 import Navbar from "../Home/components/Navbar";
 import Searchbar from "../Home/components/Searchbar";
 import Item from "./components/Item";
-import { useEffect, useState } from "react";
-import { useAuthContext } from "../../context/AuthContext";
-import Home from "../Home/Home";
 
 function ItemPage() {
 
@@ -36,7 +36,7 @@ function ItemPage() {
         navigate(`/?searchText=${searchedText}`)
     }
 
-    if (!user) return;
+    // if (!user) return;
 
     const isSaved = user?.savedItems.includes(id);
 
@@ -44,7 +44,9 @@ function ItemPage() {
         <>
             <Navbar>
                 <div className="w-full pl-5 mb-5">
-                    <Searchbar handleSubmit={handleSubmit} />
+                    <div className="max-w-150 m-auto">
+                        <Searchbar handleSubmit={handleSubmit} />
+                    </div>
                 </div>
             </Navbar>
 

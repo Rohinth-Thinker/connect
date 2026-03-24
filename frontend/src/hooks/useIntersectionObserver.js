@@ -8,8 +8,6 @@ function useIntersectionObserver(lastElementRef, hasMore, incrementPageNumber, l
             if (entries[0].isIntersecting) {
                 if (hasMore && !loading) {
                     incrementPageNumber();
-                    // setPage('called');
-                    // setPage((p) => p + 1);
                 }
             }
         }, {threshold: 0.5})

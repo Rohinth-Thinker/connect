@@ -1,8 +1,10 @@
 
 import { useState } from "react";
 import { Link } from "react-router-dom";
-import useLogin from "../../hooks/useLogin";
 import { useAuthContext } from "../../context/AuthContext";
+
+import useLogin from "../../hooks/useLogin";
+import LoadingComponent from "../../comoponets/LoadingComponent";
 
 export default function Login() {
   const [error, setError] = useState("");
@@ -22,9 +24,10 @@ export default function Login() {
     }
 
     console.log("Signin:", {username, password});
+    console.log(response);
 
-    localStorage.setItem('user', JSON.stringify({username, userID: response.userID}));
-    setAuthUser({username, userID: response.userID});
+    localStorage.setItem('user', JSON.stringify({username, userID: response.userID, avatar: response.avatar}));
+    setAuthUser({username, userID: response.userID, avatar: response.avatar});
 
     e.target.username.value = '';
     e.target.password.value = '';
@@ -37,7 +40,6 @@ export default function Login() {
     <div className="min-h-screen flex items-center justify-center bg-base-200 p-4">
       <div className="w-full max-w-sm bg-base-100 rounded-xl shadow-md p-6 space-y-5 border border-[#570DF8]">
 
-        {/* HEADER */}
         <div className="text-center">
           <h1 className="text-2xl font-bold text-[#570DF8] underline underline-offset-4">
             CONNECT
@@ -47,10 +49,7 @@ export default function Login() {
           </p>
         </div>
 
-        {/* FORM */}
         <form onSubmit={handleSubmit} className="space-y-4">
-
-          {/* USERNAME */}
           <input
             name="username"
             type="text"
@@ -59,7 +58,6 @@ export default function Login() {
             required
           />
 
-          {/* PASSWORD */}
           <input
             name="password"
             type="password"
@@ -68,7 +66,6 @@ export default function Login() {
             required
           />
 
-          {/* LOGIN BUTTON */}
           <button
             type="submit"
             disabled={loading}
@@ -79,13 +76,8 @@ export default function Login() {
             }`}
           >
             {loading ? 
-                  <div className="flex gap-2 justify-center items-center">
-                    <span className="loading loading-spinner loading-sm"></span>
-                    <span>Loging in…</span>
-                  </div>
-
-                  : 
-                  
+                  <LoadingComponent text="Loging in..." color="text-white" />
+                    :
                 "Log in"
             }
           </button>

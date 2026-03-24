@@ -1,8 +1,12 @@
 import { useEffect, useRef, useState } from "react";
-import { Html5Qrcode } from "html5-qrcode";
 import { Link } from "react-router-dom";
+import { Html5Qrcode } from "html5-qrcode";
+
 import useSignup from "../../hooks/useSignup";
 import { useAuthContext } from "../../context/AuthContext";
+
+import LoadingComponent from "../../comoponets/LoadingComponent";
+import { DEFAULT_AVATAR_URL } from "../../App";
 
 const SCAN_TIMEOUT_MS = 15000;
 const STABLE_READS_REQUIRED = 2;
@@ -128,8 +132,8 @@ export default function Signup() {
 
     console.log("Signup:", {username, password, rollNo});
 
-    localStorage.setItem('user', JSON.stringify({username, userID: response.userID}));
-    setAuthUser({username, userID: response.userID});
+    localStorage.setItem('user', JSON.stringify({username, userID: response.userID, avatar: DEFAULT_AVATAR_URL}));
+    setAuthUser({username, userID: response.userID, avatar: DEFAULT_AVATAR_URL});
 
     e.target.username.value = '';
     e.target.password.value = '';
@@ -145,7 +149,6 @@ export default function Signup() {
     <div className="min-h-screen flex items-center justify-center bg-base-200 p-4">
       <div className="w-full max-w-sm bg-base-100 rounded-xl shadow-md p-6 space-y-5 border border-[#570DF8]">
 
-        {/* HEADER */}
         <div className="text-center">
           <h1 className="text-2xl font-bold text-[#570DF8] underline underline-offset-4">
             CONNECT
@@ -171,7 +174,6 @@ export default function Signup() {
             required
           />
 
-          {/* VERIFY BOX */}
           <div className="border border-dashed border-[#570DF8] rounded-lg p-4 bg-[#f6f3ff] space-y-3 relative">
 
             <div className="flex items-center gap-2 font-semibold text-[#570DF8]">
@@ -216,7 +218,6 @@ export default function Signup() {
               readOnly
             />
 
-            {/* LOADING OVERLAY */}
             {starting && (
               <div className="absolute inset-0 bg-white/80 flex items-center justify-center rounded-lg">
                 <span className="loading loading-spinner text-primary"></span>
@@ -225,7 +226,6 @@ export default function Signup() {
             )}
           </div>
 
-          {/* CAMERA */}
           <div id="barcode-scanner" />
 
           <button
@@ -240,13 +240,8 @@ export default function Signup() {
             }`}
           >
               {loading ? 
-                  <div className="flex gap-2 justify-center items-center">
-                    <span className="loading loading-spinner loading-sm"></span>
-                    <span>Signing up…</span>
-                  </div>
-
+                  <LoadingComponent text="Signing up..." color="text-white" />
                   : 
-                  
                 "Sign Up"
                 }
 

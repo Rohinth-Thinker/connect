@@ -29,7 +29,7 @@ function useLogin() {
                 return {status: false, error: result.error};
             }
 
-            return {status: true, userID: result.userID};
+            return {status: true, userID: result.userID, avatar: result.avatar};
 
         } catch(err) {
             console.log(err);

@@ -1,10 +1,13 @@
 
 import { useEffect, useState } from "react";
-import ItemCard from "../../Home/components/ItemCard";
 import { Link, useNavigate } from "react-router-dom";
+
 import { useAuthContext } from "../../../context/AuthContext";
+
+import ItemCard from "../../Home/components/ItemCard";
 import LoadingComponent from "../../../comoponets/LoadingComponent";
 import NotFoundComponent from "../../../comoponets/NotFoundComponent";
+import { DEFAULT_AVATAR_URL } from "../../../App";
 
 export default function Item({ id, savedState }) {
   const [activeImage, setActiveImage] = useState(0);
@@ -27,8 +30,6 @@ export default function Item({ id, savedState }) {
         })
 
         const result = await response.json();
-        setLoading(false);
-
         if (!response.ok) {
           return
         }
@@ -37,7 +38,9 @@ export default function Item({ id, savedState }) {
         setIsSold(result.isSold);
 
       } catch(err) {
-        // setLoading(false);
+        console.log("Error occured: ", err);
+      } finally {
+        setLoading(false);
       }
     }
 
@@ -53,7 +56,6 @@ export default function Item({ id, savedState }) {
 
       if (!response.ok) return;
 
-
       navigate(`/chat/conversation/${result.conversationID}`);
       
     } catch(err) {
@@ -63,16 +65,6 @@ export default function Item({ id, savedState }) {
   }
 
   console.log(item);
-
-  const images = [
-    "https://m.media-amazon.com/images/I/81yFTG9EqBL._AC_UF1000,1000_QL80_.jpg",
-    "https://m.media-amazon.com/images/I/71t4GuxLCuL._AC_UF1000,1000_QL80_.jpg",
-    "https://img.daisyui.com/images/stock/photo-1606107557195-0e29a4b5b4aa.webp",
-    "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTrQmkyYaXfgokVNqYD-b-9ILZJz-lEqG11jQ&s",
-    "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTrQmkyYaXfgokVNqYD-b-9ILZJz-lEqG11jQ&s",
-    "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTrQmkyYaXfgokVNqYD-b-9ILZJz-lEqG11jQ&s",
-
-  ];
 
   function handleSoldItem(state) {
       setIsSold(state);
@@ -99,6 +91,22 @@ export default function Item({ id, savedState }) {
     })
   }
 
+  function handleShare() {
+    const shareData = {
+      title: item.title,
+      text: `Check this item on Connect 👇\n₹${item.price}\n`,
+      url: window.location.href,
+    }
+
+    if (navigator.share) {
+      navigator.share(shareData)
+          .catch((err) => console.log("Share Cancelled", err));
+    } else {
+      navigator.clipboard.writeText(shareData.url);
+      alert("Link copied to clipboard!");
+    }  
+  }
+
   if (loading) {
     return <div className="mt-15"><LoadingComponent />;</div>
   }
@@ -108,18 +116,30 @@ export default function Item({ id, savedState }) {
   }
 
   const isOwner = authUser?.userID === item.owner._id;
+  const dateFormat = { day: '2-digit', month: '2-digit', year: '2-digit' };
+  const date = new Date(item.createdAt).toLocaleDateString('en-Gb', dateFormat).replace(/\//g, '-');
 
   return (
     <div className="max-w-6xl mx-auto p-4 md:p-6 mb-1 mt-4">
       <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-        {/* IMAGE SECTION */}
+
         <div>
-          <div className=" rounded-lg overflow-hidden p-5 mr-3 ml-3 border-[#570DF8] bg-gray-50">
-            <img
-              src={item.images[activeImage]}
-              alt="Item"
-              className="w-full max-h-[350px] object-contain bg-white"
-            />
+          <div className="rounded-lg overflow-hidden p-5 mr-3 ml-3 border-[#570DF8] bg-gray-50">
+
+            <div className="relative">
+              <img
+                src={item.images[activeImage]}
+                alt="Item"
+                className="w-full max-h-[350px] object-contain bg-white"
+              />
+
+              <button onClick={handleShare} className="btn btn-ghost btn-circle absolute top-1 right-2 bg-gray-200">
+                  <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="size-6">
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M7.5 7.5h-.75A2.25 2.25 0 0 0 4.5 9.75v7.5a2.25 2.25 0 0 0 2.25 2.25h7.5a2.25 2.25 0 0 0 2.25-2.25v-7.5a2.25 2.25 0 0 0-2.25-2.25h-.75m0-3-3-3m0 0-3 3m3-3v11.25m6-2.25h.75a2.25 2.25 0 0 1 2.25 2.25v7.5a2.25 2.25 0 0 1-2.25 2.25h-7.5a2.25 2.25 0 0 1-2.25-2.25v-.75" />
+                  </svg>
+              </button>
+            </div>
+
           </div>
 
           <div className="flex gap-3 mt-6 overflow-auto w-full">
@@ -138,7 +158,6 @@ export default function Item({ id, savedState }) {
           </div>
         </div>
 
-        {/* DETAILS SECTION */}
         <div>
           <h1 className="text-2xl font-semibold">
             { item.title }
@@ -166,11 +185,9 @@ export default function Item({ id, savedState }) {
           </div>
 
           <p className="text-sm text-gray-500 mt-2">
-            {/* 👁 124 views · Posted 2 days ago */}
             • Posted on 27-12-2025
           </p>
 
-          {/* ACTION BUTTONS */}
             <div className="flex gap-4 mt-6 pr-4">
               {isOwner ?
 
@@ -195,8 +212,6 @@ export default function Item({ id, savedState }) {
                       </button>
             }
 
-            {console.log(isSaved, "Heyyy")}
-
             <button onClick={handleSaveItem} className="btn btn-ghost btn-circle">
                 <svg
                     xmlns="http://www.w3.org/2000/svg"
@@ -214,32 +229,18 @@ export default function Item({ id, savedState }) {
             </button>
           </div>
 
-          {/* DESCRIPTION */}
           <div className="mt-8">
             <h2 className="font-semibold text-lg mb-2">Description</h2>
-            {/* <p className="text-gray-700 leading-relaxed">
-              Seventh edition E-Commerce textbook by P.T. Joseph, S.J.
-              <br />
-              <br />
-              • Very good condition  
-              <br />
-              • No missing pages  
-              <br />
-              • Useful for B.Com & BBA students  
-              <br />
-              • Slight highlights on few pages
-            </p> */}
 
             <p className="whitespace-pre-wrap text-gray-700 leading-relaxed">
               {item.description}
             </p>
           </div>
 
-          {/* SELLER INFO */}
           <div className="mt-8 rounded-lg p-4 border-[#570DF8] border-2">
             <div className="flex items-center gap-4">
               <img
-                src={item.owner.avatar || null}
+                src={item.owner.avatar || DEFAULT_AVATAR_URL}
                 className="w-12 h-12 rounded-full"
                 alt="Seller"
               />
@@ -284,12 +285,6 @@ export default function Item({ id, savedState }) {
                       )
                     })
                   }
-                {/* <span className="text-sm px-3 py-1 bg-gray-100 rounded-full text-primary whitespace-nowrap">
-                  Book
-                </span>
-                <span className="text-sm px-3 py-1 bg-gray-100 rounded-full text-primary whitespace-nowrap">
-                  Used
-                </span> */}
               </div>
             </div>
         </div>

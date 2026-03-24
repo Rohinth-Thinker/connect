@@ -1,18 +1,19 @@
 
 import { useEffect, useState, useRef } from "react";
 import { Link, useParams } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
+
 import { useAuthContext } from "../../context/AuthContext";
 import { useSocketContext } from "../../context/SocketContext";
-import { useNavigate } from "react-router-dom";
+
 import extractTimestamp from "../../utils/extractTimestamp";
 import LoadingComponent from "../../comoponets/LoadingComponent";
 
-export default function Test() {
-  const [activeChat, setActiveChat] = useState(true);
-  const [isChatOpen, setIsChatOpen] = useState(true);
+export default function ConvoMessagesPage() {
+  
   const [conversation, setConversation] = useState(null);
   const [messages, setMessages] = useState([]);
-  // const [messagesByID, setMessageByID] = useState({});
+
   const {authUser} = useAuthContext();
   const [textInput, setTextInput] = useState('');
   const {socket} = useSocketContext();
@@ -160,24 +161,17 @@ function mergeMessagesById(prev, messages, position) {
   }
 
   const participant = conversation?.conversation.find((member) => member._id !== authUser.userID);
-
-  // if (!conversation) {
-  //   return;
-  // }
-
   let globalDate;
 
   return (
     <div className="h-dvh relative bg-neutral-50 md:flex">
-      {/* RIGHT PANEL (CHAT WINDOW) */}
+
       <div
         className={`absolute md:static inset-0 flex-1 bg-neutral-50 flex flex-col
-        transition-transform duration-300 ease-in-out
-        ${isChatOpen ? "translate-x-0" : "translate-x-full md:translate-x-0"}`}
+        transition-transform duration-300 ease-in-out translate-x-0`}
       >
-        {activeChat && (
           <>
-            {/* Chat Header */}
+
             <div className="px-3 py-3 border-b bg-white flex items-center gap-2 ">
           
               <div onClick={navigatePreviousPage} className="btn bg-[#570DF8] text-white h-8 p-3">
@@ -205,7 +199,7 @@ function mergeMessagesById(prev, messages, position) {
             </div>
 
             {loading && <div className="mt-5"><LoadingComponent /></div>}
-            {/* Messages */}
+
             <div ref={chatRef}
                onScroll={handleScroll} 
                className="flex-1 px-6 py-4 overflow-y-auto space-y-4">
@@ -243,19 +237,8 @@ function mergeMessagesById(prev, messages, position) {
 
             </div>
 
-            {/* Message Input */}
             <div className="px-4 py-3 border-t bg-white sticky bottom-0 w-full">
               <div className="flex items-center gap-3">
-                {/* <input
-                  type="text"
-                  placeholder="Type a message..."
-                  className="flex-1 px-4 py-2 border rounded-full text-sm focus:outline-none focus:ring-2 focus:ring-purple-500"
-                /> */}
-                {/* <textarea
-                  placeholder="Type a message..."
-                  rows={1}
-                  className="flex-1 px-4 py-2 border rounded-2xl text-sm resize-none focus:outline-none focus:ring-2 focus:ring-purple-500"
-                /> */}
                 
                 <ChatInput input={textInput} setInput={handleSetTextInput} />
                 <button
@@ -267,7 +250,6 @@ function mergeMessagesById(prev, messages, position) {
               </div>
             </div>
           </>
-        )}
       </div>
     </div>
   );
@@ -292,10 +274,6 @@ function ChatInput({ input, setInput }) {
     console.log("Working");
   };
 
-  const handleInput = () => {
-    // resize();
-  }
-
   useEffect(() => {
     resize();
   }, [input]);
@@ -305,7 +283,6 @@ function ChatInput({ input, setInput }) {
       ref={textareaRef}
       placeholder="Type a message..."
       rows={1}
-      onInput={handleInput}
       value={input}
       onChange={setInput}
       className="flex-1 px-4 py-2 border rounded-2xl text-sm resize-none overflow-hidden focus:outline-none focus:ring-2 focus:ring-purple-500"
