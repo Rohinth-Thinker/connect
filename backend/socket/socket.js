@@ -5,9 +5,9 @@ const { Server } = require('socket.io');
 
 const app = express();
 const server = http.createServer(app);
-// const io = new Server(server, {
-//    cors: 'http://localhost:5173',
-// });
+const io = new Server(server, {
+   cors: 'http://localhost:5173',
+});
 
 // const io = new Server(server, {
 //   cors: {
@@ -16,12 +16,12 @@ const server = http.createServer(app);
 //   },
 // });
 
-const io = new Server(server, {
-  cors: {
-    origin: "*", // LAN testing → allow all
-    methods: ["GET", "POST"],
-  },
-});
+// const io = new Server(server, {
+//   cors: {
+//     origin: "*", // LAN testing → allow all
+//     methods: ["GET", "POST"],
+//   },
+// });
 
 
 io.on('connection', (socket) => {

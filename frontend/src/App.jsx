@@ -29,14 +29,14 @@ function App() {
 
       <Route path='/items/:id' element={<ItemPage />} />
 
-      <Route path='/create' element={<CreatePostPage />} />
+      <Route path='/create' element={authUser ? <CreatePostPage /> : <Navigate to={"/signup"} />} />
 
       <Route path='/profile/:username' element={<ProfilePage />} />
 
       <Route path='/profile/edit' element={authUser ? <EditProfilePage /> : <Navigate to={"/signup"} />} />
 
-      <Route path='/chat/inbox' element={<MessagesPage />} />
-      <Route path='/chat/conversation/:id' element={<Test />} />
+      <Route path='/chat/inbox' element={authUser ? <MessagesPage /> : <Navigate to={"/signup"} />} />
+      <Route path='/chat/conversation/:id' element={authUser ? <Test /> : <Navigate to={"/signup"} />} />
 
       {/* <Home /> */}
 

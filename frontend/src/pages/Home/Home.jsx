@@ -1,16 +1,38 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import Footer from "./components/Footer";
 import ItemCard from "./components/ItemCard";
 import Navbar from "./components/Navbar";
 import Searchbar from "./components/Searchbar";
 import { useAuthContext } from "../../context/AuthContext";
+import useFetchItems from "../../hooks/useFetchItems";
+import useIntersectionObserver from "../../hooks/useIntersectionObserver";
+import { useSearchParams } from "react-router-dom";
 
 function Home() {
 
-    const [text, setText] = useState('');
-    const [searchedText, setSearchedText] = useState('');
+    const [searchParams] = useSearchParams()
+    const sText = searchParams.get("searchText");
+
+    const [text, setText] = useState(sText || '');
+    const [searchedText, setSearchedText] = useState(sText || '');
     const [user, setUser] = useState(null);
     const {authUser} = useAuthContext();
+
+    const [page, setPage] = useState(1);
+    const lastElementRef = useRef(null);
+
+    let fetchUrl = `/api/items?q=${searchedText}&page=${page}&limit=5`;
+    const [items, hasMore, loading] = useFetchItems(fetchUrl, [searchedText], [searchedText, page], resetPageNumber);
+    useIntersectionObserver(lastElementRef.current, hasMore, incrementPageNumber, loading);
+
+    function resetPageNumber() {
+        setPage(1);
+    }
+
+    function incrementPageNumber() {
+        setPage((p) => p + 1);
+        console.log(hasMore, page)
+    }
 
     useEffect(() => {
         async function fetchUserProfile() {
@@ -37,6 +59,8 @@ function Home() {
         setSearchedText(text);
     }
 
+    
+
     return (
         <div className="home-container mb-30">
             <Navbar avatar={user?.avatar}>
@@ -45,7 +69,7 @@ function Home() {
                 </div>
             </Navbar>
 
-            <ItemCard query={searchedText} savedItems={user?.savedItems} />
+            <ItemCard items={items} savedItemsIDs={user?.savedItems} ref={lastElementRef} loading={loading} />
 
             <Footer />
         </div>

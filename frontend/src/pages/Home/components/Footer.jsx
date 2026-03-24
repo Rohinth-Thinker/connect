@@ -1,7 +1,7 @@
 import { Link } from "react-router-dom";
 import { useAuthContext } from "../../../context/AuthContext";
 
-function Footer() {
+function Footer({loading, avatar}) {
 
   const {authUser} = useAuthContext();
 
@@ -34,7 +34,7 @@ function Footer() {
   </li>
 
 <li className="absolute -top-9">
-    <Link to={"/create"} className="tooltip" data-tip="post">
+    <Link to={"/create"} className="tooltip p-0 rounded-full" data-tip="post">
         <svg xmlns="http://www.w3.org/2000/svg" fill="#570DF8" viewBox="0 0 24 24" strokeWidth="1" stroke="white" className="size-20 bg-base-200 shadow-sm rounded-full">
           <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v6m3-3H9m12 0a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" />
         </svg>
@@ -49,10 +49,14 @@ function Footer() {
   <li>
     <Link to={`/profile/${authUser?.username}`} className="tooltip" data-tip="Profile">
       <div tabIndex={0} role="button" className="btn-circle avatar">
-        <div className="w-6 rounded-full border">
-            <img
-                alt="Tailwind CSS Navbar component"
-                src="https://img.daisyui.com/images/stock/photo-1534528741775-53994a69daeb.webp" />
+        <div className="w-6 rounded-full border bg-base-300 flex justify-center items-center">
+            { loading ?
+                <span className="loading loading-ring loading-xl"></span>
+                    :
+                <img
+                    alt="Tailwind CSS Navbar component"
+                    src={avatar || "https://img.daisyui.com/images/stock/photo-1534528741775-53994a69daeb.webp"} />
+            }
         </div>
         </div>
     </Link>

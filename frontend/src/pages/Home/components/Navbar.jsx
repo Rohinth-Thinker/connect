@@ -3,7 +3,7 @@ import { useAuthContext } from '../../../context/AuthContext';
 import {Link} from 'react-router-dom';
 import { useEffect } from "react";
 
-function Navbar({ children, avatar }) {
+function Navbar({ children, loading, avatar }) {
 
     const { authUser, setAuthUser } = useAuthContext();
 
@@ -25,10 +25,14 @@ function Navbar({ children, avatar }) {
         <div className="flex-none">
             <div className="dropdown dropdown-end">
             <div tabIndex={0} role="button" className="btn btn-ghost btn-circle avatar">
-                <div className="w-10 rounded-full">
-                <img
-                    alt="Tailwind CSS Navbar component"
-                    src={avatar || "https://img.daisyui.com/images/stock/photo-1534528741775-53994a69daeb.webp"} />
+                <div className="w-10 rounded-full bg-base-300 flex justify-center items-center">
+                    { loading ?
+                        <span className="loading loading-ring loading-xl"></span>
+                            :
+                        <img
+                            alt="Tailwind CSS Navbar component"
+                            src={avatar || "https://img.daisyui.com/images/stock/photo-1534528741775-53994a69daeb.webp"} />
+                    }
                 </div>
             </div>
             <ul

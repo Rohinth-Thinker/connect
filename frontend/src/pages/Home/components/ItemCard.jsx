@@ -1,71 +1,12 @@
-import { useEffect, useRef, useState } from "react";
+import { forwardRef, useEffect, useRef, useState } from "react";
 import itemDetails from "../../../testing/itemDetails";
 import { Link } from "react-router-dom";
 import { useAuthContext } from "../../../context/AuthContext";
+import LoadingComponent from "../../../comoponets/LoadingComponent";
 
-function ItemCard({query, savedItems}) {
-    const [items, setItems] = useState([]);
-    const [loading, setLoading] = useState(false);
-    // const [savedItems, setSavedItems] = useState([]);
+const ItemCard = forwardRef(({items, loading, savedItemsIDs}, ref) => {
 
-    const {authUser} = useAuthContext();
-    const [page, setPage] = useState(1);
-    const [hasMore, setHasMore] = useState(false);
-    const lastElementRef = useRef(null);
-
-    useEffect(() => {
-        setItems([]);
-        setPage(1);
-        setHasMore(false);
-    }, [query])
-
-    useEffect(() => {
-        const controller = new AbortController();
-
-        async function fetchItems() {
-            try {
-                setLoading(true);
-                const response = await fetch(`/api/items?q=${query}&page=${page}&limit=10`, {
-                    signal: controller.signal,
-                });
-                const result = await response.json();
-
-                if(!response.ok) {
-                    return;
-                }
-
-                console.log(result.items);
-                setItems((prev) => [...prev, ...result.items]);
-                setHasMore(result.hasMore);
-            } catch(err) {}
-            finally {
-                setLoading(false);
-            }
-        }
-
-        fetchItems();
-
-        return () => controller.abort();
-
-    }, [page, query])
-
-    useEffect(() => {
-        if (!lastElementRef.current) return;
-
-        const observer = new IntersectionObserver((entries) => {
-            if (entries[0].isIntersecting) {
-                if (hasMore) {
-                    setPage((p) => p + 1);
-                }
-            }
-        }, {threshold: 0.5})
-
-        observer.observe(lastElementRef.current);
-
-        return () => {
-            observer.disconnect();
-        }
-    }, [hasMore])
+    // const savedItems = [];
 
     // useEffect(() => {
     //     const controller = new AbortController();
@@ -118,27 +59,42 @@ function ItemCard({query, savedItems}) {
     //     )
     // }
 
-    const cards = items.map((item) => {
+    const cards = items?.map((item) => {
 
-        const isSavedByUser = savedItems?.includes(item._id);
+        const isSavedByUser = !savedItemsIDs || savedItemsIDs?.includes(item._id);
 
         return (
             <Card key={item._id} item={item} isSavedByUser={isSavedByUser} />
         )
     })
 
-    return (
-        <div className="grid grid-cols-2 gap-6 gap-y-12 p-5 mt-5 mb-5">
-            { cards }
+    console.log(loading);
 
-            <div ref={lastElementRef}></div>
+    return (
+        <>
+
+        <div className="grid grid-cols-2 gap-6 gap-y-12 p-5 mt-5 mb-5 w-full">
+            { cards }
         </div>
+
+        <div ref={ref}></div>
+
+        {loading  && (
+            <div className="mt-10">
+                <LoadingComponent />
+            </div>
+        )}
+        
+        </>
     )
-}
+})
 
 export default ItemCard;
 
 function Card({item, isSavedByUser}) {
+
+    const {authUser} = useAuthContext();
+    const [isSold, setIsSold] = useState(item?.isSold);
 
     const [isSaved, setIsSaved] = useState(isSavedByUser);
     const { _id, title, price, images, createdAt } = item;
@@ -146,13 +102,26 @@ function Card({item, isSavedByUser}) {
     const dateFormat = { day: '2-digit', month: '2-digit', year: '2-digit' };
     const date = new Date(createdAt).toLocaleDateString('en-Gb', dateFormat);
 
+    function handleSoldItem() {
+        const nextState = !isSold;
+        setIsSold(nextState);
+
+        fetch('/api/items/isSold/update', {
+            method: "PATCH",
+            body: JSON.stringify({id: _id, isSold}),
+            headers: {
+                "Content-Type": "application/json",
+        }
+    })
+    }
+
     function handleSaveItem() {
         const nextState = !isSaved;
         setIsSaved(nextState);
 
-        fetch('/api/profile/savedItems/update', {
+        fetch('/api/profile/savedItemsID/update', {
             method: "PATCH",
-            body: JSON.stringify({id: _id, isSaved: !isSaved}),
+            body: JSON.stringify({id: _id, isSaved}),
             headers: {
                 "Content-Type": "application/json",
             }
@@ -175,11 +144,10 @@ function Card({item, isSavedByUser}) {
         }
     }
 
-
     return (
 <div className="card bg-base-100 w-full shadow-xl relative rounded-md">
     <Link to={`/items/${_id}`} className="" >
-    <div className="badge badge-primary badge-xs absolute right-1 top-1">{ date }</div>
+    <div className={`badge badge-primary badge-xs absolute right-1 top-1 ${isSold && "bg-red-600 border-red-600"}`}>{ date }</div>
   <figure className="bg-base-300 pt-3 pb-3 rounded-md">
     <img className="rounded-md w-full h-30 object-contain"
       src={images[0]}
@@ -199,13 +167,18 @@ function Card({item, isSavedByUser}) {
   </Link>
     
     <div className="flex justify-around pt-1 pb-1">
-        <Link to={`/${item.owner.username}`} tabIndex={0} role="button" className="btn btn-ghost btn-circle avatar">
-        <div className="w-6 rounded-full">
-            <img
-                alt="Tailwind CSS Navbar component"
-                src={item.owner.avatar || 'https://img.daisyui.com/images/stock/photo-1534528741775-53994a69daeb.webp'} />
-        </div>
-        </Link>
+        {/* {console.log(authUser.userID, item.owner._id)} */}
+            {authUser?.userID === item.owner._id ? 
+                <button onClick={handleSoldItem} className={`btn rounded-full p-1 pr-2 pl-2 text-xs ${isSold && "bg-red-600 text-white"}`}>sold</button>   
+                    :
+                <Link to={`/profile/${item.owner.username}`} tabIndex={0} role="button" className="btn btn-ghost btn-circle avatar">
+                    <div className="w-6 rounded-full">
+                        <img
+                            alt="Tailwind CSS Navbar component"
+                            src={item.owner.avatar || 'https://img.daisyui.com/images/stock/photo-1534528741775-53994a69daeb.webp'} />
+                    </div>
+                </Link>
+            }
 
         <button onClick={handleSaveItem} className="btn btn-ghost btn-circle">
             <svg

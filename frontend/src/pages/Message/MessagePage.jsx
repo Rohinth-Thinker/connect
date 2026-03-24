@@ -4,6 +4,7 @@ import { useState } from "react";
 import { useAuthContext } from "../../context/AuthContext";
 import { Link, useNavigate } from "react-router-dom";
 import Footer from "../Home/components/Footer";
+import LoadingComponent from "../../comoponets/LoadingComponent";
 
 const chatList = [
   {
@@ -39,6 +40,7 @@ export default function MessagesPage() {
 
   const [userResults, setUserResults] = useState([]);
   const [hasMore, setHasMore] = useState(false);
+  const [loading, setLoading] = useState(false);
 
   const lastElementRef = useRef(null);
 
@@ -46,8 +48,10 @@ export default function MessagesPage() {
 
   useEffect(() => {
     async function fetchUserConversations() {
+      setLoading(true);
       const response = await fetch('/api/chat/conversation/all');
       const result = await response.json();
+      setLoading(false);
 
       if (!response.ok) {
         console.log(result.error);
@@ -68,7 +72,6 @@ export default function MessagesPage() {
 
   useEffect(() => {
     const controller = new AbortController();
-
     const debounceTimeout = setTimeout(() => {
 
     async function fetchUsers() {
@@ -77,10 +80,11 @@ export default function MessagesPage() {
           signal: controller.signal,
         });
         const result = await response.json();
-        
         if (!response.ok) return;
 
-        setUserResults((prev) => [...prev, ...result.profiles]);
+        const profiles = result.profiles.filter((p) => p._id !== authUser.userID);
+      
+        setUserResults((prev) => [...prev, ...profiles]);
         console.log(result.hasMore);
         setHasMore(() => result.hasMore);
       } catch(err) {
@@ -156,7 +160,8 @@ export default function MessagesPage() {
   //   setIsChatOpen(false);
   // };
 
-  if (!conversations) return <h1>Loading</h1>
+  // if (!conversations) return;
+  // if (!conversations) return <h1>Loading</h1>
   // if (conversations.length < 1) return <h1>No Conversations started yet</h1>
 
   return (
@@ -195,6 +200,7 @@ export default function MessagesPage() {
             { 
               userResults.length <= 0 ? 
                   <div className="w-full min-h-20 flex justify-center items-center">No results found</div>
+                    // <div className="w-full min-h-20 flex justify-center items-center"><LoadingComponent /></div>
                     :
                   userResults.map((user) => {
                     return (
@@ -244,16 +250,17 @@ export default function MessagesPage() {
                     )
                   })
                 }
+                {/* {userResults.length > 0 && loading && page !== 0 && <LoadingComponent />} */}
             <div ref={lastElementRef}></div>
           </ul>
         )}
 
 </div>
-
-        { (conversations.length < 1) && <h1>No Conversations started yet</h1>}
+        {loading && <LoadingComponent />}
+        { (conversations?.length < 1) && <h1>No Conversations started yet</h1>}
         {/* Chat List */}
         <div className="flex-1 overflow-y-auto mt-1">
-          {members.map((member) => (
+          {members?.map((member) => (
             
             <Link to={`/chat/conversation/${member.convoID}`}
               key={member._id}

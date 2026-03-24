@@ -4,6 +4,8 @@ import { Link, useParams } from "react-router-dom";
 import { useAuthContext } from "../../context/AuthContext";
 import { useSocketContext } from "../../context/SocketContext";
 import { useNavigate } from "react-router-dom";
+import extractTimestamp from "../../utils/extractTimestamp";
+import LoadingComponent from "../../comoponets/LoadingComponent";
 
 export default function Test() {
   const [activeChat, setActiveChat] = useState(true);
@@ -23,6 +25,8 @@ export default function Test() {
   const [hasMore, setHashMore] = useState(false);
   const isFetchingRef = useRef(false);
   const scrollRef = useRef({prevScrollHeight: 0, prevScrollTop: 0});
+  const [loading, setLoading] = useState(false);
+  const [sending, setSending] = useState(false);
 
   const {id} = useParams();
 
@@ -35,8 +39,12 @@ export default function Test() {
 
   useEffect(() => {
     async function getConversation() {
+      setLoading(true);
+
       const response = await fetch(`/api/chat/conversation/${id}?page=${page}&limit=${15}`);
       const result = await response.json();
+
+      setLoading(false);
 
       if (!response.ok) {
         return;
@@ -55,7 +63,7 @@ export default function Test() {
         const newScrollHeight = el.scrollHeight;
         const diff = newScrollHeight - scrollRef.current.prevScrollHeight;
 
-        el.scrollTop = diff + scrollRef.current.prevScrollTop - 15;
+        el.scrollTop = diff + scrollRef.current.prevScrollTop - 50;
       })
     }
 
@@ -133,6 +141,7 @@ function mergeMessagesById(prev, messages, position) {
       return;
     }
     
+    setSending(true);
     const response = await fetch('/api/chat/message/add', {
       method: 'POST',
       body: JSON.stringify({conversationID: conversation._id, messageText: textInput}),
@@ -142,6 +151,7 @@ function mergeMessagesById(prev, messages, position) {
     })
 
     const result = await response.json();
+    setSending(false);
     if (!response.ok) {
       return;
     }
@@ -151,9 +161,11 @@ function mergeMessagesById(prev, messages, position) {
 
   const participant = conversation?.conversation.find((member) => member._id !== authUser.userID);
 
-  if (!conversation) {
-    return;
-  }
+  // if (!conversation) {
+  //   return;
+  // }
+
+  let globalDate;
 
   return (
     <div className="h-dvh relative bg-neutral-50 md:flex">
@@ -174,17 +186,17 @@ function mergeMessagesById(prev, messages, position) {
                 </svg>
               </div>
 
-              <Link to={`/profile/${participant.username}`} className="flex items-center gap-1">
+              <Link to={`/profile/${participant?.username}`} className="flex items-center gap-1">
 
                 <div tabIndex={0} role="button" className="btn btn-ghost btn-circle avatar">
                   <div className="w-8 rounded-full">
                     <img
                         alt="Tailwind CSS Navbar component"
-                        src={participant.avatar || "https://img.daisyui.com/images/stock/photo-1534528741775-53994a69daeb.webp"} />
+                        src={participant?.avatar || "https://img.daisyui.com/images/stock/photo-1534528741775-53994a69daeb.webp"} />
                   </div>
               </div>
               
-              <p className="font-medium text-sm">{participant.username}</p>
+              <p className="font-medium text-sm">{participant?.username}</p>
 
 
                 {/* <p className="font-medium">{participant.username}</p> */}
@@ -192,6 +204,7 @@ function mergeMessagesById(prev, messages, position) {
               </Link>
             </div>
 
+            {loading && <div className="mt-5"><LoadingComponent /></div>}
             {/* Messages */}
             <div ref={chatRef}
                onScroll={handleScroll} 
@@ -199,17 +212,29 @@ function mergeMessagesById(prev, messages, position) {
                 <div></div>
               {messages.map((msg) => {
 
+                const {date, time} = extractTimestamp(msg.createdAt);
+
+                let dateState = globalDate != date;
+                if (dateState) {
+                  globalDate = date;
+                }
+
                 return (
-                    <div
-                      key={msg._id}
+                    <div key={msg._id}>
+                      {dateState && <div className="text-center mb-4 mt-3"><span className="text-xs">--- {date} ---</span></div>}
+                    <div                
                       className={`max-w-[70%] px-4 py-2 rounded-xl text-sm ${
                         msg.sender === authUser.userID
                           ? "ml-auto bg-purple-600 text-white"
                           : "mr-auto bg-white border"
                       }`}
                     >
-                      {msg.text}
+                      <div className="flex flex-col">
+                        <span>{msg.text}</span>
+                        <span className="text-right text-xs">{time}</span>
+                      </div>
 
+                    </div>
                     </div>
                 )
               })}
@@ -234,9 +259,10 @@ function mergeMessagesById(prev, messages, position) {
                 
                 <ChatInput input={textInput} setInput={handleSetTextInput} />
                 <button
+                  disabled={sending}
                   onClick={onSubmit}
                   className="bg-purple-600 text-white px-4 py-2 rounded-full hover:bg-purple-700">
-                  Send
+                  {sending ? <div className="m-0.5"><LoadingComponent text="" /></div> : "Send"}
                 </button>
               </div>
             </div>
@@ -251,8 +277,10 @@ const MAX_HEIGHT  = 100;
 function ChatInput({ input, setInput }) {
   const textareaRef = useRef(null);
 
-  const handleInput = () => {
+  const resize = () => {
     const el = textareaRef.current;
+    if (!el) return;
+
     el.style.height = "auto";
     if (el.scrollHeight <= MAX_HEIGHT) {
       el.style.height = el.scrollHeight + "px";
@@ -261,7 +289,16 @@ function ChatInput({ input, setInput }) {
       el.style.height = MAX_HEIGHT + "px";
       el.style.overflowY = "auto";
     }
+    console.log("Working");
   };
+
+  const handleInput = () => {
+    // resize();
+  }
+
+  useEffect(() => {
+    resize();
+  }, [input]);
 
   return (
     <textarea

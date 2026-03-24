@@ -10,11 +10,15 @@ function ProfilePage() {
     const [user, setUser] = useState(null);
     const {username} = useParams();
     const {authUser} = useAuthContext();
+    const [loading, setLoading] = useState(false);
     
     useEffect(() => {
         async function fetchUserProfile() {
+          setLoading(true);
           const response = await fetch(`/api/profile/${username}`);
           const result = await response.json();
+          setLoading(false);
+          
           if (!response.ok) {
             console.log(result.error);
             return;
@@ -27,13 +31,15 @@ function ProfilePage() {
         if (username) fetchUserProfile();
       }, [username])
 
+    const avatar = user?.avatar || null;
+
     return (
         <>
-            <Navbar />
+            <Navbar loading={loading} avatar={avatar} />
 
-            <Profile isOwner={authUser.userID === user?._id} user={user} />
+            <Profile isOwner={authUser.userID === user?._id} user={user} loading={loading} />
 
-            <Footer />
+            <Footer loading={loading} avatar={avatar} />
         </>
     )
 }

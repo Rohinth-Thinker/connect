@@ -1,11 +1,14 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
+import uploadToCloudinary from "../../../utils/cloudUpload";
+import LoadingComponent from "../../../comoponets/LoadingComponent";
 
 export default function CreatePost() {
   const [images, setImages] = useState([]);
   const [activeImageNo, setActiveImageNo] = useState(0);
   const [tags, setTags] = useState([]);
   const [tagInput, setTagInput] = useState("");
+  const [loading, setLoading] = useState(false);
 
   const navigate = useNavigate();
 
@@ -37,10 +40,11 @@ export default function CreatePost() {
 
    const handleSubmit = async (e) => {
     e.preventDefault();
+    setLoading(true);
 
     let results = images;
     if (images.length > 0) {
-      const uploadPromises = images.map(uploadToCloudinary);
+      const uploadPromises = images.map((img) => uploadToCloudinary(img, "connect_items", "item_images"));
       results = await Promise.all(uploadPromises);
     }
 
@@ -63,6 +67,7 @@ export default function CreatePost() {
       }
     })
     const result = await response.json();
+    setLoading(false);
 
     if (!response.ok) {
       console.log(result.error)
@@ -73,26 +78,26 @@ export default function CreatePost() {
 
   };
 
-  const CLOUD_NAME = "durdslrun";
-  const UPLOAD_PRESET = "connect_items";
-  async function uploadToCloudinary(file) {
+  // const CLOUD_NAME = "durdslrun";
+  // const UPLOAD_PRESET = "connect_items";
+  // async function uploadToCloudinary(file) {
     
-    const formData = new FormData();
-    formData.append("file", file);
-    formData.append("upload_preset", UPLOAD_PRESET);
-    formData.append("folder", "item_images");
+  //   const formData = new FormData();
+  //   formData.append("file", file);
+  //   formData.append("upload_preset", UPLOAD_PRESET);
+  //   formData.append("folder", "item_images");
 
-    const response = await fetch(`https://api.cloudinary.com/v1_1/${CLOUD_NAME}/image/upload`, {
-      method: "POST",
-      body: formData,
-    })
+  //   const response = await fetch(`https://api.cloudinary.com/v1_1/${CLOUD_NAME}/image/upload`, {
+  //     method: "POST",
+  //     body: formData,
+  //   })
 
-    const result = await response.json();
+  //   const result = await response.json();
 
-    const optimizedUrl = result.secure_url.replace('/upload/', '/upload/f_auto,q_auto/');
-    return optimizedUrl;
+  //   const optimizedUrl = result.secure_url.replace('/upload/', '/upload/f_auto,q_auto/');
+  //   return optimizedUrl;
 
-  }
+  // }
 
   return (
     <div className="max-w-xl mx-auto p-4 pb-28">
@@ -150,6 +155,7 @@ export default function CreatePost() {
             name="title"
             type="text"
             placeholder="E-Commerce Book – 7th Edition"
+            maxLength={60}
             className="input input-bordered w-full mt-2 border-[#570DF8]"
             required
           />
@@ -161,6 +167,8 @@ export default function CreatePost() {
           <input
             name="price"
             type="number"
+            min={0}
+            max={10000}
             placeholder="200"
             className="input input-bordered w-full mt-2 border-[#570DF8]"
             required
@@ -207,6 +215,7 @@ export default function CreatePost() {
             name="description"
             rows="4"
             placeholder="Used for one semester, no torn pages..."
+            maxLength={500}
             className="textarea textarea-bordered w-full mt-2 border-[#570DF8]"
           />
         </div>
@@ -254,9 +263,10 @@ export default function CreatePost() {
         {/* POST BUTTON */}
         <button
           type="submit"
-          className="w-full bg-[#570DF8] text-white py-3 rounded-lg hover:bg-[#4b0ed6] transition"
+          disabled={loading}
+          className={`w-full ${loading ? "bg-[#570df881]" : "bg-[#570DF8]"} text-white py-3 rounded-lg hover:bg-[#4b0ed6] transition`}
         >
-          Post Item
+          {loading ? <LoadingComponent text="Posting..." color="text-white" /> : "Post Item"}
         </button>
       </form>
     </div>

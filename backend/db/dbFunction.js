@@ -23,6 +23,20 @@ async function findUserByID(id) {
     }
 }
 
+async function getUserItems(ids, page, limit) {
+    try {
+        const filter = {_id: {$in: ids}};
+        const skip = (page - 1) * limit;
+
+        const items = await itemModel.find(filter).populate("owner", "username avatar").skip(skip).limit(limit);
+        const total = await itemModel.countDocuments(filter)
+
+        return {items, total, skipped: skip};
+    } catch(err) {
+        throw err;
+    }
+}
+
 async function createUser(username, password, rollNo) {
     try {
         const user = await userModel.create({username, password, rollNo});
@@ -44,6 +58,7 @@ async function findUserWithPass(username) {
 async function fetchItems(query, page, limit) {
     try {
         // const regex = new RegExp(query, "i");
+
         const filter = query ? {
             $or: [
                 {title: {$regex: query, $options: "i"}},
@@ -99,6 +114,15 @@ async function removeSavedItems(username, id) {
     }
 }
 
+async function updateIsSold(id, isSold) {
+    try {
+        const result = await itemModel.updateOne({_id: id}, {isSold: !isSold});
+        return result;
+    } catch(err) {
+        throw err;
+    }
+}
+
 async function uploadNewItem(itemData) {
     try {
         const item = await itemModel.create(itemData);
@@ -121,6 +145,15 @@ async function getUserProfile(username) {
     try {
         // const user = await userModel.findOne({username}).populate("listings savedItems","title price ");
         const user = await userModel.findOne({username});
+        return user;
+    } catch(err) {
+        throw err;
+    }
+}
+
+async function updateUserListings(userID, itemId) {
+    try {
+        const user = await userModel.findByIdAndUpdate(userID, {$push: {listings: itemId}});
         return user;
     } catch(err) {
         throw err;
@@ -232,6 +265,15 @@ async function createConversation(userID, memberID) {
     }
 }
 
+async function updateAvatar(userID, url) {
+    try {
+        const user = await userModel.findByIdAndUpdate(userID, {$set: {avatar: url}}, {new: true});
+        return user;
+    } catch(err) {
+        throw err;
+    }
+}
+
 // async function messageDummy() {
 //     messageModel.create({sender: '6954e0849fa2db0099ce34c0', text: 'What about you?'});
 // }
@@ -239,10 +281,12 @@ async function createConversation(userID, memberID) {
 // messageDummy();
 
 module.exports = { 
-    findUser, findUserByID, createUser, findUserWithPass, addItem, fetchItems,
-    fetchItemById, isValid, addSavedItems, removeSavedItems, uploadNewItem,
+    findUser, findUserByID, createUser, findUserWithPass,
+    addItem, fetchItems, getUserItems,
+    fetchItemById, isValid, addSavedItems, removeSavedItems, uploadNewItem, updateIsSold,
     updateEditedProfile, getUserProfile, testingAddConvo,
     getUserConversations, getConversation, createMessage, addMessage, getMessagesByConversationID,
     getAllUserProfiles, getUserProfilesWithPagination,
     checkConversationExist, createConversation,
+    updateAvatar, updateUserListings,
  };

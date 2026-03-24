@@ -1,6 +1,6 @@
 
 const { Router } = require('express');
-const { handleAddItems, handleFetchItems, handleFetchOneItem, handleUploadItem } = require('../controllers/itemContoller');
+const { handleAddItems, handleFetchItems, handleFetchOneItem, handleUploadItem, handleUpdateIsSold } = require('../controllers/itemContoller');
 const { validateToken } = require('../utils/validateToken');
 
 
@@ -10,5 +10,6 @@ const router = Router()
 router.get('/', handleFetchItems);
 router.get('/:id', handleFetchOneItem);
 router.post('/item/upload', validateToken, handleUploadItem);
+router.patch('/isSold/update', validateToken, handleUpdateIsSold);
 
 module.exports = router;

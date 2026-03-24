@@ -1,6 +1,6 @@
-const { findUser, addSavedItems, removeSavedItems, updateEditedProfile, getUserProfile, getAllUserProfiles, getUserProfilesWithPagination } = require("../db/dbFunction");
+const { findUser, addSavedItems, removeSavedItems, updateEditedProfile, getUserProfile, getAllUserProfiles, getUserProfilesWithPagination, getSavedItems, findUserByID, getUserItemListings, getUserItems, updateAvatar, isValid } = require("../db/dbFunction");
 
-async function handleGetSavedItems(req, res) {
+async function handleGetSavedItemsID(req, res) {
     try {
         const {username} = req;
 
@@ -11,7 +11,51 @@ async function handleGetSavedItems(req, res) {
         
         res.status(200).json(user.savedItems);
     } catch(err) {
-        console.log(`Error at handleGetSavedItems Controller - ${err}`)
+        console.log(`Error at handleGetSavedItemsID Controller - ${err}`)
+        res.status(400).json({error: 'Something went wrong. Try again later.'});
+    }
+}
+
+async function handleGetSavedItems(req, res) {
+    try {
+        const {userID} = req;
+        const {page=1, limit=5} = req.query;
+
+        const user = await findUserByID(userID);
+        if (!user) {
+            return res.status(401).json({error: 'Invalid token'});
+        }
+        
+        const {items, total, skipped} = await getUserItems(user?.savedItems, Number(page), Number(limit));
+        const hasMore = items.length + skipped < total;
+        
+        res.status(200).json({items, hasMore});
+    } catch(err) {
+        console.log(`Error at handleGetSavedItemsID Controller - ${err}`)
+        res.status(400).json({error: 'Something went wrong. Try again later.'});
+    }
+}
+
+async function handleGetUserItemListings(req, res) {
+    try {
+        const {userID} = req.params;
+        const {page=1, limit=5} = req.query;
+
+        if (!userID || !isValid(userID)) {
+            return res.status(400).json({error: "Invalid ID"});
+        }
+
+        const user = await findUserByID(userID);
+        if (!user) {
+            return res.status(401).json({error: 'Invalid token'});
+        }
+        
+        const {items, total, skipped} = await getUserItems(user?.listings, Number(page), Number(limit));
+        const hasMore = items.length + skipped < total;
+        
+        res.status(200).json({items, hasMore});
+    } catch(err) {
+        console.log(`Error at handleGetSavedItemsID Controller - ${err}`)
         res.status(400).json({error: 'Something went wrong. Try again later.'});
     }
 }
@@ -21,15 +65,17 @@ async function handleUpdateSavedItems(req, res) {
         const {username} = req;
         const {id, isSaved} = req.body;
 
-        if (!id || !isSaved) {
+        console.log(id, isSaved);
+
+        if (!id) {
             return res.status(400).json({error: 'Invalid Data'});
         }
 
         let result;
         if (isSaved) {
-            result = await addSavedItems(username, id);
-        } else {
             result = await removeSavedItems(username, id);
+        } else {
+            result = await addSavedItems(username, id);
         }
 
         if (result.matchedCount === 0) {
@@ -55,7 +101,7 @@ async function handleEditProfile(req, res) {
         const result = await updateEditedProfile(username, profile);
         if (result.matchedCount === 0) {
             return res.status(401).json({error: 'Invalid token'});
-            }
+        }
 
         return res.status(200).json({msg: 'Updated successfully'});
     } catch(err) {
@@ -112,7 +158,35 @@ async function handleFetchUserProfiles(req, res) {
     }
 }
 
+async function handleProfileImageChange(req, res) {
+    try {
+        const {userID} = req;
+        const {url} = req.body;
+
+        if (!userID || !isValid(userID)) {
+            return res.status(400).json({error: "Invalid Token"});
+        }
+
+        if (!url) {
+            return res.status(400).json({error: 'No avatar url to update'});
+        }
+
+        const result = await updateAvatar(userID, url);
+        if (!result) {
+            return res.json(400).error({error: "Invalid Token"});
+        }
+
+        res.status(200).json({success: true})
+    } catch(err) {
+        console.log(`Error at handleProfileImageChange Controller - ${err}`);
+        res.status(400).json({error: 'Something went wrong. Try again later.'});
+    }
+}
+
 module.exports = {
-    handleGetSavedItems, handleUpdateSavedItems, handleEditProfile, handleGetUserProfile,
+    handleGetSavedItemsID, handleGetSavedItems, handleUpdateSavedItems, 
+    handleGetUserItemListings,
+    handleEditProfile, handleGetUserProfile,
     handleFetchAllUserProfiles, handleFetchUserProfiles,
+    handleProfileImageChange,
 };

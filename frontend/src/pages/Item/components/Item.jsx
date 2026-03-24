@@ -1,37 +1,68 @@
 
 import { useEffect, useState } from "react";
 import ItemCard from "../../Home/components/ItemCard";
+import { Link, useNavigate } from "react-router-dom";
+import { useAuthContext } from "../../../context/AuthContext";
+import LoadingComponent from "../../../comoponets/LoadingComponent";
+import NotFoundComponent from "../../../comoponets/NotFoundComponent";
 
-export default function Item({ id }) {
+export default function Item({ id, savedState }) {
   const [activeImage, setActiveImage] = useState(0);
   const [item, setItem] = useState(null);
+  const [loading, setLoading] = useState(false);
+  const [isSold,setIsSold] = useState(false);
+  const [isSaved, setIsSaved] = useState(savedState);
+  const {authUser} = useAuthContext();
+  const navigate = useNavigate();
 
-  console.log(item);
 
   useEffect(() => {
     const controller = new AbortController();
 
     async function fetchItem() {
       try {
+        setLoading(true);
         const response = await fetch(`/api/items/${id}`, {
           signal: controller.signal,
         })
 
         const result = await response.json();
+        setLoading(false);
 
         if (!response.ok) {
           return
         }
 
         setItem(result);
+        setIsSold(result.isSold);
 
-      } catch(err) {}
+      } catch(err) {
+        // setLoading(false);
+      }
     }
 
     fetchItem()
 
     return () => controller.abort();
   }, [])
+
+  async function handleMessageClick(id) {
+    try {
+      const response = await fetch(`/api/chat/conversation/check/${id}`);
+      const result = await response.json();
+
+      if (!response.ok) return;
+
+
+      navigate(`/chat/conversation/${result.conversationID}`);
+      
+    } catch(err) {
+      console.log(err);
+      return;
+    }
+  }
+
+  console.log(item);
 
   const images = [
     "https://m.media-amazon.com/images/I/81yFTG9EqBL._AC_UF1000,1000_QL80_.jpg",
@@ -43,13 +74,40 @@ export default function Item({ id }) {
 
   ];
 
-  if (!item) {
-    return (
-      <div>
-        <h1>Not found</h1>
-      </div>
-    )
+  function handleSoldItem(state) {
+      setIsSold(state);
+
+      fetch('/api/items/isSold/update', {
+          method: "PATCH",
+          body: JSON.stringify({id, isSold}),
+          headers: {
+              "Content-Type": "application/json",
+      }
+  })
   }
+
+  function handleSaveItem() {
+    const nextState = !isSaved;
+    setIsSaved(nextState);
+
+    fetch('/api/profile/savedItemsID/update', {
+        method: "PATCH",
+        body: JSON.stringify({id, isSaved}),
+        headers: {
+            "Content-Type": "application/json",
+        }
+    })
+  }
+
+  if (loading) {
+    return <div className="mt-15"><LoadingComponent />;</div>
+  }
+
+  if (!item) {
+    return <NotFoundComponent showAction={true} onAction={() => navigate(-1)} />;
+  }
+
+  const isOwner = authUser?.userID === item.owner._id;
 
   return (
     <div className="max-w-6xl mx-auto p-4 md:p-6 mb-1 mt-4">
@@ -94,6 +152,17 @@ export default function Item({ id }) {
             <span className="text-sm px-3 py-1 bg-gray-100 rounded-full text-primary">
               {item.category}
             </span>
+
+            { isSold ?
+                <span className="text-sm px-3 py-1 bg-red-600 rounded-full text-white">
+                  Sold
+                </span>
+                  :
+                <span className="text-sm px-3 py-1 bg-blue-600 rounded-full text-white">
+                  Unsold
+                </span>
+            }
+
           </div>
 
           <p className="text-sm text-gray-500 mt-2">
@@ -102,25 +171,47 @@ export default function Item({ id }) {
           </p>
 
           {/* ACTION BUTTONS */}
-          <div className="flex gap-4 mt-6 pr-4">
-            <button className="flex-1 bg-[#570DF8] text-white py-3 rounded-lg hover:bg-gray-800">
-              Message Seller
+            <div className="flex gap-4 mt-6 pr-4">
+              {isOwner ?
+
+                  isSold ?
+                  <button onClick={() => handleSoldItem(false)} className="flex-1 bg-red-600 text-white py-3 rounded-lg hover:bg-gray-800">
+                    Sold
+                  </button>
+                    :
+                  <button onClick={() => handleSoldItem(true)} className="flex-1 bg-blue-600 text-white py-3 rounded-lg hover:bg-gray-800">
+                    Unsold
+                  </button>
+                
+                  :
+
+                  item.isSold ?
+                      <button disabled className="flex-1 bg-gray-300 text-gray-500 py-3 rounded-lg hover:bg-gray-800">
+                        Sold
+                      </button>
+                        :
+                      <button onClick={() => handleMessageClick(item.owner._id)} className="flex-1 bg-[#570DF8] text-white py-3 rounded-lg hover:bg-gray-800">
+                        Message Seller
+                      </button>
+            }
+
+            {console.log(isSaved, "Heyyy")}
+
+            <button onClick={handleSaveItem} className="btn btn-ghost btn-circle">
+                <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    className="h-10 w-10"
+                    fill={isSaved ? 'red' : 'none'}
+                    viewBox="0 0 24 24"
+                    stroke="currentColor">
+                    <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth="2"
+                    d="M4.318 6.318a4.5 4.5 0 016.364 0L12 7.636l1.318-1.318a4.5 4.5 0 116.364 6.364L12 21.364 4.318 12.682a4.5 4.5 0 010-6.364z"
+                    />
+                </svg>
             </button>
-            <button className="btn btn-ghost btn-circle">
-            <svg
-                xmlns="http://www.w3.org/2000/svg"
-                className="h-10 w-10"
-                fill="none"
-                viewBox="0 0 24 24"
-                stroke="currentColor">
-                <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth="1.5"
-                d="M4.318 6.318a4.5 4.5 0 016.364 0L12 7.636l1.318-1.318a4.5 4.5 0 116.364 6.364L12 21.364 4.318 12.682a4.5 4.5 0 010-6.364z"
-                />
-            </svg>
-        </button>
           </div>
 
           {/* DESCRIPTION */}
@@ -139,7 +230,7 @@ export default function Item({ id }) {
               • Slight highlights on few pages
             </p> */}
 
-            <p className="text-gray-700 leading-relaxed">
+            <p className="whitespace-pre-wrap text-gray-700 leading-relaxed">
               {item.description}
             </p>
           </div>
@@ -148,7 +239,7 @@ export default function Item({ id }) {
           <div className="mt-8 rounded-lg p-4 border-[#570DF8] border-2">
             <div className="flex items-center gap-4">
               <img
-                src="https://i.pravatar.cc/100"
+                src={item.owner.avatar || null}
                 className="w-12 h-12 rounded-full"
                 alt="Seller"
               />
@@ -162,12 +253,17 @@ export default function Item({ id }) {
             </div>
 
             <div className="flex gap-3 mt-4">
-              <button className="flex-1 border py-2 rounded hover:bg-gray-100 bg-[#570DF8] text-white">
+              <Link to={`/profile/${item.owner.username}`} className="text-center flex-1 border py-2 rounded hover:bg-gray-100 bg-[#570DF8] text-white">
                 View Profile
-              </button>
-              <button className="flex-1 border py-2 rounded hover:bg-gray-100 bg-[#570DF8] text-white">
-                Message
-              </button>
+              </Link>
+
+              {!isOwner &&
+                <button
+                  onClick={() => handleMessageClick(item.owner._id)}
+                  className="flex-1 border py-2 rounded hover:bg-gray-100 bg-[#570DF8] text-white">
+                  Message
+                </button>
+              }
             </div>
           </div>
         </div>
@@ -201,7 +297,7 @@ export default function Item({ id }) {
 
       {/* SIMILAR ITEMS */}
       <div className="mt-14">
-        <h2 className="text-xl font-semibold mb-4">Similar Items</h2>
+        {/* <h2 className="text-xl font-semibold mb-4">Similar Items</h2> */}
         <ItemCard />
         {/* <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
           {[1, 2, 3, 4].map((item) => (

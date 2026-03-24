@@ -1,16 +1,17 @@
-const { addItem, fetchItems, fetchItemById, isValid, findUser, uploadNewItem } = require("../db/dbFunction");
+const { addItem, fetchItems, fetchItemById, isValid, findUser, uploadNewItem, updateIsSold, updateUserListings } = require("../db/dbFunction");
 
-async function handleAddItems(req, res) {
-    const {title, price, category, condition, description, images, tags, owner} = req.body;
+// async function handleAddItems(req, res) {
+//     const {title, price, category, condition, description, images, tags, owner} = req.body;
 
-    const item = await addItem(title, price, category, condition, description, images, tags, owner);
+//     const item = await addItem(title, price, category, condition, description, images, tags, owner);
 
-    res.json(item);
-}
+//     res.json(item);
+// }
 
 async function handleFetchItems(req, res) {
     try {
         const {q:query='', page=1, limit=5} = req.query;
+        console.log(query);
 
         const {items, total, skipped} = await fetchItems(query, Number(page), Number(limit));
         const hasMore = items.length + skipped < total;
@@ -55,6 +56,7 @@ async function handleUploadItem(req, res) {
         }
 
         const item = await uploadNewItem({...itemData, owner: user._id});
+        await updateUserListings(user._id, item._id);
 
         res.status(200).json({msg: "Item uploaded Successfully", itemID: item._id});
     } catch(err) {
@@ -63,4 +65,25 @@ async function handleUploadItem(req, res) {
     }
 }
 
-module.exports = { handleAddItems, handleFetchItems, handleFetchOneItem, handleUploadItem };
+async function handleUpdateIsSold(req, res) {
+    const {userID} = req;
+    const {id, isSold} = req.body;
+
+    if (!id) {
+        return res.status(400).json({error: "Invalid data"});
+    }
+
+    const result = await updateIsSold(id, isSold);
+    console.log(result);
+    if (result.matchedCount === 0) {
+        return res.status(401).json({error: 'Invalid token'});
+    }
+
+    return res.status(200).json({msg: 'Updated successfully'});
+
+}
+
+module.exports = { 
+    handleFetchItems, handleFetchOneItem, handleUploadItem,
+    handleUpdateIsSold,
+};
