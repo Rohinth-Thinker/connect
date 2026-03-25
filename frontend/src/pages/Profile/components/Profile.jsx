@@ -56,12 +56,18 @@ export default function Profile({ isOwner, user, loading }) {
 
         <div className="flex-1">
           <h1 className="text-xl font-semibold text-primary">@{user?.username}</h1>
+          <p className="text-xs text-gray-500">
+            ({user?.rollNo}) {user?.departmentName && ' -- ' + user?.departmentName }
+          </p>
+
+          {/* <p className="text-xs text-gray-500">
+            {user?.departmentName}
+          </p> */}
+          {console.log("hlo", user)}
           <p className="text-sm text-gray-500">
             {user?.collegeName}
           </p>
-          <p className="text-xs text-gray-500">
-            {user?.departmentName}
-          </p>
+
           <p className="text-xs text-gray-400">since {date}</p>
         </div>
       </div>

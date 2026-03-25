@@ -10,7 +10,7 @@ function healthCheck(req, res) {
 
 async function handleSignup(req, res) {
     try {
-        let {username,  password, rollNo} = req.body;
+        let {username,  password, rollNo, collegeName} = req.body;
         username = username.toLowerCase();
 
         const validationStatus = validateInputs(req.body);
@@ -23,7 +23,7 @@ async function handleSignup(req, res) {
             return res.status(409).json({error: 'Username aldready exist'});
         }
 
-        const newUser = await createUser(username, password, rollNo);
+        const newUser = await createUser(username, password, rollNo, collegeName);
 
         const token = generateToken(username, newUser._id);
         setCookie(res, token);

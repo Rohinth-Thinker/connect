@@ -123,8 +123,9 @@ export default function Signup() {
 
     const username = e.target.username.value.toLowerCase();
     const password = e.target.password.value;
+    const collegeName = "DG Vaishnav College";
 
-    const response = await authenticate({username, password, rollNo});
+    const response = await authenticate({username, password, rollNo, collegeName});
     if (!response.status) {
         setError(response.error)
         return;

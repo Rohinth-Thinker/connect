@@ -37,9 +37,9 @@ async function getUserItems(ids, page, limit) {
     }
 }
 
-async function createUser(username, password, rollNo) {
+async function createUser(username, password, rollNo, collegeName) {
     try {
-        const user = await userModel.create({username, password, rollNo});
+        const user = await userModel.create({username, password, rollNo, collegeName});
         return user;
     } catch(err) {
         throw err;
