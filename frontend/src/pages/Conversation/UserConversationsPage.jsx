@@ -7,6 +7,7 @@ import { useAuthContext } from "../../context/AuthContext";
 
 import Footer from "../Home/components/Footer";
 import LoadingComponent from "../../comoponets/LoadingComponent";
+import NotFoundComponent from "../../comoponets/NotFoundComponent";
 
 export default function UserConversationsPage() {
   
@@ -219,7 +220,7 @@ export default function UserConversationsPage() {
 
 </div>
         {loading && <LoadingComponent />}
-        { (conversations?.length < 1) && <h1>No Conversations started yet</h1>}
+        { (conversations?.length < 1) && <NotFoundComponent title="No Conversation Started Yet" description="Start messaging now" />}
 
         <div className="flex-1 overflow-y-auto mt-1">
           {members?.map((member) => (
