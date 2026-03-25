@@ -6,6 +6,8 @@ import LoadingComponent from "../../../comoponets/LoadingComponent";
 
 const ItemCard = forwardRef(({items, loading, savedItemsIDs}, ref) => {
 
+    const {authUser} = useAuthContext();
+
     // if (items?.length === 0) {
     //     return ( 
     //         <div className="">
@@ -129,22 +131,24 @@ function Card({item, isSavedByUser}) {
                         </div>
                     </Link>
                 }
-
-                <button onClick={handleSaveItem} className="btn btn-ghost btn-circle">
-                    <svg
-                        xmlns="http://www.w3.org/2000/svg"
-                        className="h-6 w-6"
-                        fill={isSaved ? 'red' : 'none'}
-                        viewBox="0 0 24 24"
-                        stroke="currentColor">
-                        <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth="2"
-                        d="M4.318 6.318a4.5 4.5 0 016.364 0L12 7.636l1.318-1.318a4.5 4.5 0 116.364 6.364L12 21.364 4.318 12.682a4.5 4.5 0 010-6.364z"
-                        />
-                    </svg>
-                </button>
+                
+                { authUser &&
+                    <button onClick={handleSaveItem} className="btn btn-ghost btn-circle">
+                        <svg
+                            xmlns="http://www.w3.org/2000/svg"
+                            className="h-6 w-6"
+                            fill={isSaved ? 'red' : 'none'}
+                            viewBox="0 0 24 24"
+                            stroke="currentColor">
+                            <path
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            strokeWidth="2"
+                            d="M4.318 6.318a4.5 4.5 0 016.364 0L12 7.636l1.318-1.318a4.5 4.5 0 116.364 6.364L12 21.364 4.318 12.682a4.5 4.5 0 010-6.364z"
+                            />
+                        </svg>
+                    </button>
+                }
 
                 <button onClick={handleShare} className="btn btn-ghost btn-circle">
                     <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="size-6">
