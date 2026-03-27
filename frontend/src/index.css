@@ -5,3 +5,7 @@
 .unmirror-video video {
   transform: scaleX(-1);
 }
+
+.breadcrumbs li + li::before {
+  color: blue; /* change this to any color */
+}
