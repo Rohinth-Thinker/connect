@@ -12,8 +12,11 @@ import ProfilePage from './pages/Profile/ProfilePage'
 import EditProfilePage from './pages/EditProfile/EditProfilePage'
 import UserConversationsPage from './pages/Conversation/UserConversationsPage'
 import ConvoMessagesPage from './pages/Conversation/ConvoMessagesPage'
-import Classroom from './testing/classroom/Classroom'
-import ClassroomDrive from './testing/classroom1/ClassroomDrive'
+// import Classroom from './testing/classroom/Classroom'
+// import ClassroomDrive from './testing/classroom1/ClassroomDrive'
+// import ClassroomDrive from './testing/classroom2/ClassroomDrive'
+import ClassroomDrive from './pages/classroom/ClassroomDrive'
+import Footer from './pages/Home/components/Footer'
 
 
 export const DEFAULT_AVATAR_URL = "https://img.daisyui.com/images/stock/photo-1534528741775-53994a69daeb.webp";
@@ -40,7 +43,7 @@ function App() {
       <Route path='/chat/inbox' element={authUser ? <UserConversationsPage /> : <Navigate to={"/signup"} />} />
       <Route path='/chat/conversation/:id' element={authUser ? <ConvoMessagesPage /> : <Navigate to={"/signup"} />} />
 
-      <Route path='/classroom' element={<ClassroomDrive />} />
+      <Route path='/classroom' element={<><ClassroomDrive /> <Footer /> </>} />
     </Routes>
   )
 }
