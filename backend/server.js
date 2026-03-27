@@ -10,6 +10,10 @@ const router = require('./routes/index');
 
 const { app, server } = require('./socket/socket');
 
+const dns = require("node:dns/promises");
+// console.log(dns.getServers());
+dns.setServers(["1.1.1.1"]);
+
 // const app = express();
 
 const PORT = process.env.PORT_NUM;

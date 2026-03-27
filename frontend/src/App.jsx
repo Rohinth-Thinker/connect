@@ -12,8 +12,7 @@ import ProfilePage from './pages/Profile/ProfilePage'
 import EditProfilePage from './pages/EditProfile/EditProfilePage'
 import UserConversationsPage from './pages/Conversation/UserConversationsPage'
 import ConvoMessagesPage from './pages/Conversation/ConvoMessagesPage'
-import Classroom from './testing/classroom/Classroom'
-import ClassroomDrive from './testing/classroom1/ClassroomDrive'
+import ClassroomDrive from './pages/classroom/ClassroomDrive'
 
 
 export const DEFAULT_AVATAR_URL = "https://img.daisyui.com/images/stock/photo-1534528741775-53994a69daeb.webp";
