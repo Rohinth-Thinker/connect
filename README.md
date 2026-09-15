@@ -79,6 +79,7 @@ College students constantly need to exchange study materials, second-hand books,
 
 ### 👤 Profiles & Auth
 - Sign up with username, roll number, and college info
+- Passwords securely Hashed using bcrypt
 - Edit profile: bio, department, avatar (image upload)
 - View any user's profile, listings, and saved items
 - Secure logout with cookie invalidation
@@ -195,7 +196,6 @@ connect/
 
 ## 🔮 Future Improvements
 
-- 🔒 Password hashing with bcrypt
 - 📱 Progressive Web App (PWA) support for mobile
 - 🔔 Push notifications for new messages and listing updates
 - 🏫 Multi-college support with college-scoped feeds
