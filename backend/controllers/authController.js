@@ -1,3 +1,5 @@
+const bcrypt = require("bcrypt");
+
 const { findUser, createUser, findUserWithPass, testingAddConvo } = require("../db/dbFunction");
 const { setCookie } = require("../utils/setCookie");
 const { generateToken } = require("../utils/tokenFunctions");
@@ -23,7 +25,9 @@ async function handleSignup(req, res) {
             return res.status(409).json({error: 'Username aldready exist'});
         }
 
-        const newUser = await createUser(username, password, rollNo, collegeName);
+        const hashedPassword = await bcrypt.hash(password, 10);
+
+        const newUser = await createUser(username, hashedPassword, rollNo, collegeName);
 
         const token = generateToken(username, newUser._id);
         setCookie(res, token);
@@ -51,7 +55,9 @@ async function handleLogin(req, res) {
             return res.status(401).json({error: 'User not found'});
         }
 
-        if (user.password !== password) {
+        const isPasswordValid = await bcrypt.compare(password, user.password);
+
+        if (!isPasswordValid) {
             return res.status(401).json({error: 'Invalid password'});
         }
 
